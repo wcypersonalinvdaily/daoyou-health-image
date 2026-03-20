@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daoyou · Health & Image</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0c0f1a;
+  --bg2: #111827;
+  --surface: rgba(255,255,255,0.04);
+  --surface2: rgba(255,255,255,0.07);
+  --glass: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.08);
+  --ink: #f1f5f9;
+  --ink2: rgba(255,255,255,0.55);
+  --ink3: rgba(255,255,255,0.25);
+  --accent: #22d3ee;
+  --accent-bg: rgba(34,211,238,0.1);
+  --green: #4ade80;
+  --green-bg: rgba(74,222,128,0.1);
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.1);
+  --amber: #fbbf24;
+  --amber-bg: rgba(251,191,36,0.1);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167,139,250,0.1);
+  --pink: #f472b6;
+  --pink-bg: rgba(244,114,182,0.1);
+  --r: 14px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); font-family:'Sora',sans-serif; color:var(--ink); min-height:100vh; }
+body::before { content:''; position:fixed; inset:0; background:radial-gradient(ellipse at 20% 20%, rgba(34,211,238,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(167,139,250,0.05) 0%, transparent 50%); pointer-events:none; z-index:0; }
+
+.page { max-width:900px; margin:0 auto; padding:20px 16px 80px; position:relative; z-index:1; }
+
+.header { text-align:center; margin-bottom:28px; }
+.header h1 { font-size:1.4rem; font-weight:300; letter-spacing:0.15em; }
+.header h1 em { font-style:normal; color:var(--accent); font-weight:600; }
+.header .sub { font-size:0.72rem; color:var(--ink3); margin-top:6px; letter-spacing:0.2em; text-transform:uppercase; }
+
+/* Tabs */
+.tabs { display:flex; gap:4px; margin-bottom:20px; background:var(--surface); border-radius:var(--r); padding:4px; border:1px solid var(--glass-border); }
+.tab-btn { flex:1; padding:10px 6px; border:none; background:transparent; font-family:inherit; font-size:0.75rem; font-weight:400; cursor:pointer; color:var(--ink3); transition:all 0.3s; border-radius:10px; letter-spacing:0.03em; }
+.tab-btn.active { color:var(--accent); background:rgba(34,211,238,0.1); font-weight:600; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* Cards */
+.card { background:var(--glass); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--glass-border); border-radius:var(--r); padding:20px; margin-bottom:14px; box-shadow:var(--shadow); }
+.card-title { display:flex; align-items:center; gap:10px; margin-bottom:16px; font-size:0.88rem; font-weight:500; letter-spacing:0.04em; }
+.card-title .icon { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+
+.form-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:12px; }
+.form-group { display:flex; flex-direction:column; gap:4px; }
+.form-group label { font-size:0.68rem; font-weight:500; color:var(--ink3); text-transform:uppercase; letter-spacing:0.06em; }
+.form-group input, .form-group select, .form-group textarea { padding:9px 12px; border:1px solid var(--glass-border); border-radius:8px; font-size:0.82rem; font-family:inherit; background:var(--surface); color:var(--ink); }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px rgba(34,211,238,0.15); }
+
+.btn { padding:8px 16px; border:1px solid var(--glass-border); border-radius:8px; font-size:0.78rem; font-weight:500; cursor:pointer; background:var(--surface); color:var(--ink); font-family:inherit; transition:all 0.2s; letter-spacing:0.02em; }
+.btn:hover { border-color:var(--accent); color:var(--accent); }
+.btn-primary { background:linear-gradient(135deg, var(--accent), #06b6d4); color:#0c0f1a; border:none; font-weight:600; }
+.btn-primary:hover { opacity:0.9; }
+.btn-sm { padding:5px 10px; font-size:0.7rem; }
+.btn-danger { border-color:rgba(248,113,113,0.3); color:var(--red); }
+
+/* Stats */
+.stats-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(100px,1fr)); gap:10px; margin-bottom:16px; }
+.stat { text-align:center; padding:16px 10px; border-radius:12px; background:var(--surface); border:1px solid var(--glass-border); }
+.stat .sv { font-size:1.6rem; font-weight:700; }
+.stat .sl { font-size:0.65rem; color:var(--ink3); margin-top:4px; letter-spacing:0.06em; text-transform:uppercase; }
+
+/* Log entries */
+.log-entry { display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--glass-border); border-radius:10px; margin-bottom:8px; background:var(--surface); transition:all 0.2s; }
+.log-entry:hover { border-color:rgba(34,211,238,0.2); }
+.log-date { font-size:0.75rem; font-weight:600; color:var(--accent); min-width:75px; }
+.log-content { flex:1; font-size:0.8rem; color:var(--ink2); }
+.log-tag { font-size:0.68rem; padding:3px 10px; border-radius:999px; font-weight:600; }
+
+/* Rating dots */
+.rating { display:flex; gap:4px; }
+.rating .dot { width:10px; height:10px; border-radius:50%; border:1px solid var(--glass-border); cursor:pointer; transition:all 0.2s; }
+.rating .dot.active { border-color:var(--accent); }
+
+/* Progress bar */
+.progress-bar { height:6px; border-radius:3px; background:var(--surface2); overflow:hidden; margin-top:6px; }
+.progress-fill { height:100%; border-radius:3px; transition:width 0.4s ease; }
+
+/* Streak */
+.streak-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; font-size:0.72rem; font-weight:600; }
+
+/* Toast */
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); padding:12px 24px; border-radius:10px; font-size:0.82rem; font-weight:500; color:#0c0f1a; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; }
+.toast.show { opacity:1; }
+.toast.ok { background:var(--green); }
+.toast.err { background:var(--red); }
+
+@media(max-width:600px) {
+  .form-row { grid-template-columns:1fr 1fr; }
+  .stats-row { grid-template-columns:repeat(3,1fr); }
+  .tab-btn { font-size:0.68rem; padding:8px 4px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1><em>道友</em> · Health & Image</h1>
+    <div class="sub" id="dateDisplay"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('dashboard')">Overview</button>
+    <button class="tab-btn" onclick="switchTab('fitness')">💪 Fitness</button>
+    <button class="tab-btn" onclick="switchTab('health')">🫀 Daily</button>
+    <button class="tab-btn" onclick="switchTab('image')">✨ Image</button>
+    <button class="tab-btn" onclick="switchTab('supplements')">💊 Supps</button>
+  </div>
+
+  <!-- ═══ OVERVIEW ═══ -->
+  <div class="tab-panel active" id="tab-dashboard">
+    <div class="stats-row" id="overviewStats"></div>
+
+    <!-- Streaks -->
+    <div class="card">
+      <div class="card-title"><div class="icon" style="background:var(--accent-bg);color:var(--accent);">🔥</div> Streaks</div>
+      <div id="streakDisplay" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="card">
+      <div class="card-title"><div class="icon" style="background:var(--purple-bg);color:var(--purple);">📋</div> Recent Activity</div>
+      <div id="recentActivity"></div>
+    </div>
+  </div>
+
+  <!-- ═══ FITNESS ═══ -->
+  <div class="tab-panel" id="tab-fitness">
+    <div class="card">
+      <div class="card-title"><div class="icon" style="background:var(--green-bg);color:var(--green);">💪</div> Log Workout</div>
+      <div class="form-row" style="grid-template-columns:auto 1fr 1fr auto;">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="gymDate">
+        </div>
+        <div class="form-group">
+          <label>Body Part</label>
+          <select id="gymPart">
+            <option value="Chest + Triceps">Chest + Triceps</option>
+            <option value="Back + Biceps">Back + Biceps</option>
+            <option value="Shoulders + Arms">Shoulders + Arms</option>
+            <option value="Legs">Legs</option>
+            <option value="Core">Core</option>
+            <option value="Full Body">Full Body</option>
+            <option value="Cardio">Cardio</option>
+            <option value="Others">Others</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Duration (min)</label>
+          <input type="number" id="gymDuration" value="60" min="0">
+        </div>
+        <div class="form-group">
+          <label>Intensity</label>
+          <select id="gymIntensity">
+            <option value="1">1 - Light</option>
+            <option value="2">2 - Easy</option>
+            <option value="3" selected>3 - Moderate</option>
+            <option value="4">4 - Hard</option>
+            <option value="5">5 - Max</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="grid-template-columns:1fr;">
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" id="gymNotes" placeholder="e.g. Bench press 80kg x 5, feeling strong...">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="logWorkout()" style="width:100%;padding:10px;">Log Workout</button>
+    </div>
+
+    <!-- Body Measurements -->
+    <div class="card">
+      <div class="card-title"><div class="icon" style="background:var(--amber-bg);color:var(--amber);">📐</div> Body Measurements</div>
+      <div class="form-row" style="grid-template-columns:repeat(5,1fr);">
+        <div class="form-group"><label>Weight (kg)</label><input type="number" id="bodyWeight" step="0.1" placeholder="75.0"></div>
+        <div class="form-group"><label>Chest (cm)</label><input type="number" id="bodyChest" step="0.1" placeholder="100"></div>
+        <div class="form-group"><label>Waist (cm)</label><input type="number" id="bodyWaist" step="0.1" placeholder="80"></div>
+        <div class="form-group"><label>Arms (cm)</label><input type="number" id="bodyArms" step="0.1" placeholder="38"></div>
+        <div class="form-group"><label>Photo Link</label><input type="text" id="bodyPhoto" placeholder="Google Drive link..."></div>
+      </div>
+      <button class="btn" onclick="logMeasurement()" style="width:100%;padding:8px;">Save Measurement</button>
+    </div>
+
+    <!-- Workout History -->
+    <div class="card">
+      <div class="card-title"><div class="icon" style="background:var(--surface2);">📜</div> Workout History</div>
+      <div id="workoutHistory"></div>
+    </div>
+  </div>
+
+  <!-- ═══ DAILY HEALTH ═══ -->
+  <div class="tab-panel" id="tab-health">
+    <div class="card">
+      <div class="card-title"><div class="icon" style="background:var(--accent-bg);color:var(--accent);">🫀</div> Daily Health Log</div>
+      <div class="form-row" style="grid-template-columns:auto 1fr 1fr 1fr;">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="healthDate">
+        </div>
+        <div class="form-group">
+          <label>Breakfast</label>
+          <input type="text" id="mealBreakfast" placeholder="e.g. Oats + eggs">
+        </div>
+        <div class="form-group">
+          <label>Lunch</label>
+          <input type="text" id="mealLunch" placeholder="e.g. Chicken rice">
+        </div>
+        <div class="form-group">
+          <label>Dinner</label>
+          <input type="text" id="mealDinner" placeholder="e.g. Salmon + salad">
+        </div>
+      </div>
+      <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+        <div class="form-group">
+          <label>Diet Rating</label>
+          <select id="dietRating">
+            <option value="Good">🟢 Good</option>
+            <option value="Ok">🟡 Ok</option>
+            <option value="Bad">🔴 Bad</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Sleep Time</label>
+          <input type="time" id="sleepTime" value="23:00">
+        </div>
+        <div class="form-group">
+          <label>Wake Time</label>
+          <input type="time" id="wakeTime" value="06:30">
+        </div>
+        <div class="form-group">
+          <label>Sleep Quality</label>
+          <select id="sleepQuality">
+            <option value="1">1 - Terrible</option>
+            <option value="2">2 - Poor</option>
+            <option value="3" selected>3 - Ok</option>
+            <option value="4">4 - Good</option>
+            <option value="5">5 - Great</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="grid-template-columns:1fr;">
+        <div class="form-group">
+          <label>Water Intake (glasses)</label>
+          <input type="number" id="waterIntake" value="8" min="0">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="logDailyHealth()" style="width:100%;padding:10px;">Save Daily Log</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><div class="icon" style="background:var(--surface2);">📜</div> Health History</div>
+      <div id="healthHistory"></div>
+    </div>
+  </div>
+
+  <!-- ═══ IMAGE ═══ -->
+  <div class="tab-panel" id="tab-image">
+    <!-- Skincare -->
+    <div class="card">
+      <div class="card-title"><div class="icon" style="background:var(--pink-bg);color:var(--pink);">🧴</div> Skincare Log</div>
+      <div class="form-row" style="grid-template-columns:auto 1fr 1fr;">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="skinDate">
+        </div>
+        <div class="form-group">
+          <label>AM Routine</label>
+          <input type="text" id="skinAM" placeholder="e.g. Cleanser → Toner → Serum → SPF50">
+        </div>
+        <div class="form-group">
+          <label>PM Routine</label>
+          <input type="text" id="skinPM" placeholder="e.g. Oil cleanse → Cleanser → Retinol → Moisturizer">
+        </div>
+      </div>
+      <div class="form-row" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group">
+          <label>Skin Condition</label>
+          <select id="skinCondition">
+            <option value="Clear">✨ Clear</option>
+            <option value="Normal">😊 Normal</option>
+            <option value="Oily">💦 Oily</option>
+            <option value="Dry">🏜️ Dry</option>
+            <option value="Breakout">😬 Breakout</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" id="skinNotes" placeholder="New product reaction, restock needed...">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="logSkincare()" style="width:100%;padding:10px;">Save Skincare Log</button>
+    </div>
+
+    <!-- Grooming -->
+    <div class="card">
+      <div class="card-title"><div class="icon" style="background:var(--amber-bg);color:var(--amber);">💈</div> Grooming</div>
+      <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+        <div class="form-group">
+          <label>Last Haircut</label>
+          <input type="date" id="groomHaircut">
+        </div>
+        <div class="form-group">
+          <label>Next Appointment</label>
+          <input type="date" id="groomNext">
+        </div>
+        <div class="form-group">
+          <label>Style</label>
+          <input type="text" id="groomStyle" placeholder="e.g. Undercut fade">
+        </div>
+        <div class="form-group">
+          <label>Cost (SGD)</label>
+          <input type="number" id="groomCost" placeholder="30">
+        </div>
+      </div>
+      <button class="btn" onclick="logGrooming()">Save Grooming</button>
+      <div id="groomingHistory" style="margin-top:12px;"></div>
+    </div>
+
+    <!-- Wardrobe -->
+    <div class="card">
+      <div class="card-title"><div class="icon" style="background:var(--purple-bg);color:var(--purple);">👔</div> Wardrobe Log</div>
+      <div class="form-row" style="grid-template-columns:auto 1fr 1fr auto;">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="outfitDate">
+        </div>
+        <div class="form-group">
+          <label>Outfit</label>
+          <input type="text" id="outfitDesc" placeholder="e.g. Navy blazer + white shirt + chinos">
+        </div>
+        <div class="form-group">
+          <label>Occasion</label>
+          <select id="outfitOccasion">
+            <option value="Work">Work</option>
+            <option value="Casual">Casual</option>
+            <option value="Dinner">Dinner</option>
+            <option value="Meeting">Meeting</option>
+            <option value="Date">Date</option>
+            <option value="Event">Event</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Rating</label>
+          <select id="outfitRating">
+            <option value="5">⭐⭐⭐⭐⭐</option>
+            <option value="4">⭐⭐⭐⭐</option>
+            <option value="3" selected>⭐⭐⭐</option>
+            <option value="2">⭐⭐</option>
+            <option value="1">⭐</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" onclick="logOutfit()">Save Outfit</button>
+      <div id="outfitHistory" style="margin-top:12px;"></div>
+    </div>
+
+    <!-- Fragrance -->
+    <div class="card">
+      <div class="card-title"><div class="icon" style="background:var(--accent-bg);color:var(--accent);">🫧</div> Fragrance Rotation</div>
+      <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="form-group">
+          <label>Fragrance</label>
+          <input type="text" id="fragName" placeholder="e.g. Bleu de Chanel">
+        </div>
+        <div class="form-group">
+          <label>Occasion</label>
+          <select id="fragOccasion">
+            <option value="Daily">Daily</option>
+            <option value="Work">Work</option>
+            <option value="Evening">Evening</option>
+            <option value="Date">Date</option>
+            <option value="Special">Special Event</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Stock Level</label>
+          <select id="fragStock">
+            <option value="Full">Full</option>
+            <option value="Half">Half</option>
+            <option value="Low">Low - Reorder soon</option>
+            <option value="Empty">Empty</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" onclick="addFragrance()">Add / Update Fragrance</button>
+      <div id="fragranceList" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <!-- ═══ SUPPLEMENTS ═══ -->
+  <div class="tab-panel" id="tab-supplements">
+    <div class="card">
+      <div class="card-title"><div class="icon" style="background:var(--green-bg);color:var(--green);">💊</div> Supplements Tracker</div>
+      <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr auto;">
+        <div class="form-group">
+          <label>Supplement</label>
+          <input type="text" id="suppName" placeholder="e.g. Vitamin D3">
+        </div>
+        <div class="form-group">
+          <label>Daily Dosage</label>
+          <input type="text" id="suppDosage" placeholder="e.g. 2000 IU">
+        </div>
+        <div class="form-group">
+          <label>Stock (days left)</label>
+          <input type="number" id="suppStock" placeholder="30">
+        </div>
+        <div class="form-group">
+          <label>Expiry Date</label>
+          <input type="date" id="suppExpiry">
+        </div>
+        <div class="form-group" style="justify-content:flex-end;">
+          <label>&nbsp;</label>
+          <button class="btn btn-primary btn-sm" onclick="addSupplement()">+ Add</button>
+        </div>
+      </div>
+      <div id="supplementList" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let DATA = {
+  workouts: [],
+  measurements: [],
+  dailyHealth: [],
+  skincare: [],
+  grooming: [],
+  outfits: [],
+  fragrances: [],
+  supplements: []
+};
+
+(function init() {
+  document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-SG', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  const today = new Date().toISOString().slice(0,10);
+  ['gymDate','healthDate','skinDate','outfitDate'].forEach(id => document.getElementById(id).value = today);
+
+  try { DATA = JSON.parse(localStorage.getItem('daoyou_health') || 'null') || DATA; } catch(e) {}
+
+  renderAll();
+})();
+
+function save() {
+  localStorage.setItem('daoyou_health', JSON.stringify(DATA));
+  renderAll();
+}
+
+function renderAll() {
+  renderOverview();
+  renderWorkoutHistory();
+  renderHealthHistory();
+  renderGroomingHistory();
+  renderOutfitHistory();
+  renderFragranceList();
+  renderSupplementList();
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const p = String(d).split('-');
+  if (p.length === 3) return p[2]+'/'+p[1]+'/'+p[0];
+  return d;
+}
+
+// ═══════════════════════════════════════
+// OVERVIEW
+// ═══════════════════════════════════════
+function renderOverview() {
+  const now = new Date();
+  const thisWeek = DATA.workouts.filter(w => {
+    const d = new Date(w.date);
+    const diff = (now - d) / (1000*60*60*24);
+    return diff >= 0 && diff < 7;
+  });
+  const thisMonth = DATA.workouts.filter(w => w.date && w.date.startsWith(now.toISOString().slice(0,7)));
+  const avgSleep = DATA.dailyHealth.length > 0 ? (DATA.dailyHealth.slice(-7).reduce((s,d) => s + (d.sleepHours||0), 0) / Math.min(7, DATA.dailyHealth.length)).toFixed(1) : '—';
+  const lastWeight = DATA.measurements.length > 0 ? DATA.measurements[DATA.measurements.length-1].weight : '—';
+  const skinStreak = calcStreak(DATA.skincare.map(s => s.date));
+  const gymStreak = calcStreak(DATA.workouts.map(w => w.date));
+
+  document.getElementById('overviewStats').innerHTML = `
+    <div class="stat"><div class="sv" style="color:var(--green);">${thisWeek.length}</div><div class="sl">Workouts This Week</div></div>
+    <div class="stat"><div class="sv" style="color:var(--accent);">${thisMonth.length}</div><div class="sl">Workouts This Month</div></div>
+    <div class="stat"><div class="sv" style="color:var(--purple);">${avgSleep}h</div><div class="sl">Avg Sleep (7d)</div></div>
+    <div class="stat"><div class="sv" style="color:var(--amber);">${lastWeight}${lastWeight !== '—' ? 'kg' : ''}</div><div class="sl">Last Weight</div></div>
+    <div class="stat"><div class="sv" style="color:var(--pink);">${DATA.skincare.length}</div><div class="sl">Skincare Logs</div></div>
+    <div class="stat"><div class="sv" style="color:var(--accent);">${DATA.supplements.length}</div><div class="sl">Supplements</div></div>
+  `;
+
+  // Streaks
+  document.getElementById('streakDisplay').innerHTML = `
+    <span class="streak-badge" style="background:var(--green-bg);color:var(--green);">💪 Gym: ${gymStreak} day streak</span>
+    <span class="streak-badge" style="background:var(--pink-bg);color:var(--pink);">🧴 Skincare: ${skinStreak} day streak</span>
+    ${DATA.supplements.filter(s => s.stock <= 7).map(s => `<span class="streak-badge" style="background:var(--red-bg);color:var(--red);">⚠️ ${s.name}: ${s.stock} days left</span>`).join('')}
+  `;
+
+  // Recent activity
+  const all = [
+    ...DATA.workouts.map(w => ({ date: w.date, text: `💪 ${w.part} — ${w.duration}min (${w.intensity}/5)`, type: 'workout' })),
+    ...DATA.dailyHealth.map(h => ({ date: h.date, text: `🫀 Diet: ${h.dietRating} · Sleep: ${h.sleepHours}h (${h.sleepQuality}/5)`, type: 'health' })),
+    ...DATA.skincare.map(s => ({ date: s.date, text: `🧴 Skin: ${s.condition} · AM: ${s.am||'—'} · PM: ${s.pm||'—'}`, type: 'skincare' })),
+    ...DATA.outfits.map(o => ({ date: o.date, text: `👔 ${o.desc} (${o.occasion}) ${'⭐'.repeat(o.rating)}`, type: 'outfit' }))
+  ].sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0, 10);
+
+  document.getElementById('recentActivity').innerHTML = all.length === 0
+    ? '<div style="text-align:center;color:var(--ink3);padding:20px;">No activity yet. Start logging!</div>'
+    : all.map(a => `<div class="log-entry"><span class="log-date">${formatDate(a.date)}</span><span class="log-content">${a.text}</span></div>`).join('');
+}
+
+function calcStreak(dates) {
+  if (!dates.length) return 0;
+  const sorted = [...new Set(dates)].sort().reverse();
+  let streak = 0;
+  const today = new Date().toISOString().slice(0,10);
+  let check = new Date(today);
+  for (let i = 0; i < sorted.length; i++) {
+    const expected = check.toISOString().slice(0,10);
+    if (sorted[i] === expected) { streak++; check.setDate(check.getDate()-1); }
+    else if (i === 0 && sorted[i] === new Date(check.setDate(check.getDate()-1)).toISOString().slice(0,10)) { streak++; check.setDate(check.getDate()-1); }
+    else break;
+  }
+  return streak;
+}
+
+// ═══════════════════════════════════════
+// FITNESS
+// ═══════════════════════════════════════
+function logWorkout() {
+  const w = {
+    date: document.getElementById('gymDate').value,
+    part: document.getElementById('gymPart').value,
+    duration: parseInt(document.getElementById('gymDuration').value) || 0,
+    intensity: parseInt(document.getElementById('gymIntensity').value) || 3,
+    notes: document.getElementById('gymNotes').value
+  };
+  if (!w.date) { toast('Pick a date', 'err'); return; }
+  DATA.workouts.push(w);
+  document.getElementById('gymNotes').value = '';
+  save();
+  toast('💪 Workout logged!', 'ok');
+}
+
+function logMeasurement() {
+  const m = {
+    date: new Date().toISOString().slice(0,10),
+    weight: parseFloat(document.getElementById('bodyWeight').value) || 0,
+    chest: parseFloat(document.getElementById('bodyChest').value) || 0,
+    waist: parseFloat(document.getElementById('bodyWaist').value) || 0,
+    arms: parseFloat(document.getElementById('bodyArms').value) || 0,
+    photo: document.getElementById('bodyPhoto').value
+  };
+  DATA.measurements.push(m);
+  save();
+  toast('📐 Measurement saved!', 'ok');
+}
+
+function renderWorkoutHistory() {
+  const el = document.getElementById('workoutHistory');
+  const sorted = DATA.workouts.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0, 15);
+  if (sorted.length === 0) { el.innerHTML = '<div style="text-align:center;color:var(--ink3);padding:16px;">No workouts yet</div>'; return; }
+  el.innerHTML = sorted.map((w,i) => {
+    const intColor = w.intensity >= 4 ? 'var(--red)' : w.intensity >= 3 ? 'var(--amber)' : 'var(--green)';
+    return `<div class="log-entry">
+      <span class="log-date">${formatDate(w.date)}</span>
+      <span class="log-content"><strong>${w.part}</strong> · ${w.duration}min ${w.notes ? '· ' + w.notes : ''}</span>
+      <span class="log-tag" style="background:${intColor}20;color:${intColor};">${w.intensity}/5</span>
+      <button class="btn btn-sm btn-danger" onclick="DATA.workouts.splice(DATA.workouts.length-1-${i},1);save();toast('Deleted','ok');" style="padding:3px 8px;">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// DAILY HEALTH
+// ═══════════════════════════════════════
+function logDailyHealth() {
+  const sleepT = document.getElementById('sleepTime').value;
+  const wakeT = document.getElementById('wakeTime').value;
+  let sleepHours = 0;
+  if (sleepT && wakeT) {
+    const [sh,sm] = sleepT.split(':').map(Number);
+    const [wh,wm] = wakeT.split(':').map(Number);
+    sleepHours = ((wh*60+wm) - (sh*60+sm) + 1440) % 1440 / 60;
+    sleepHours = Math.round(sleepHours * 10) / 10;
+  }
+  const h = {
+    date: document.getElementById('healthDate').value,
+    breakfast: document.getElementById('mealBreakfast').value,
+    lunch: document.getElementById('mealLunch').value,
+    dinner: document.getElementById('mealDinner').value,
+    dietRating: document.getElementById('dietRating').value,
+    sleepTime: sleepT, wakeTime: wakeT, sleepHours,
+    sleepQuality: parseInt(document.getElementById('sleepQuality').value),
+    water: parseInt(document.getElementById('waterIntake').value) || 0
+  };
+  if (!h.date) { toast('Pick a date', 'err'); return; }
+  DATA.dailyHealth.push(h);
+  ['mealBreakfast','mealLunch','mealDinner'].forEach(id => document.getElementById(id).value = '');
+  save();
+  toast('🫀 Daily health logged!', 'ok');
+}
+
+function renderHealthHistory() {
+  const el = document.getElementById('healthHistory');
+  const sorted = DATA.dailyHealth.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0, 10);
+  if (sorted.length === 0) { el.innerHTML = '<div style="text-align:center;color:var(--ink3);padding:16px;">No health logs yet</div>'; return; }
+  el.innerHTML = sorted.map(h => {
+    const dietColor = h.dietRating === 'Good' ? 'var(--green)' : h.dietRating === 'Ok' ? 'var(--amber)' : 'var(--red)';
+    return `<div class="log-entry">
+      <span class="log-date">${formatDate(h.date)}</span>
+      <span class="log-content">Diet: <span style="color:${dietColor};font-weight:600;">${h.dietRating}</span> · Sleep: ${h.sleepHours}h (${h.sleepQuality}/5) · 💧${h.water} glasses</span>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// IMAGE — Skincare
+// ═══════════════════════════════════════
+function logSkincare() {
+  const s = {
+    date: document.getElementById('skinDate').value,
+    am: document.getElementById('skinAM').value,
+    pm: document.getElementById('skinPM').value,
+    condition: document.getElementById('skinCondition').value,
+    notes: document.getElementById('skinNotes').value
+  };
+  if (!s.date) { toast('Pick a date', 'err'); return; }
+  DATA.skincare.push(s);
+  ['skinAM','skinPM','skinNotes'].forEach(id => document.getElementById(id).value = '');
+  save();
+  toast('🧴 Skincare logged!', 'ok');
+}
+
+// ═══════════════════════════════════════
+// IMAGE — Grooming
+// ═══════════════════════════════════════
+function logGrooming() {
+  const g = {
+    haircut: document.getElementById('groomHaircut').value,
+    next: document.getElementById('groomNext').value,
+    style: document.getElementById('groomStyle').value,
+    cost: parseFloat(document.getElementById('groomCost').value) || 0,
+    date: new Date().toISOString().slice(0,10)
+  };
+  DATA.grooming.push(g);
+  save();
+  toast('💈 Grooming saved!', 'ok');
+}
+
+function renderGroomingHistory() {
+  const el = document.getElementById('groomingHistory');
+  const sorted = DATA.grooming.slice().sort((a,b) => (b.haircut||'').localeCompare(a.haircut||''));
+  if (sorted.length === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = sorted.slice(0,5).map(g =>
+    `<div class="log-entry"><span class="log-date">${formatDate(g.haircut)}</span><span class="log-content">${g.style||'Haircut'} · $${g.cost} · Next: ${formatDate(g.next)}</span></div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════
+// IMAGE — Wardrobe
+// ═══════════════════════════════════════
+function logOutfit() {
+  const o = {
+    date: document.getElementById('outfitDate').value,
+    desc: document.getElementById('outfitDesc').value,
+    occasion: document.getElementById('outfitOccasion').value,
+    rating: parseInt(document.getElementById('outfitRating').value)
+  };
+  if (!o.desc) { toast('Describe your outfit', 'err'); return; }
+  DATA.outfits.push(o);
+  document.getElementById('outfitDesc').value = '';
+  save();
+  toast('👔 Outfit logged!', 'ok');
+}
+
+function renderOutfitHistory() {
+  const el = document.getElementById('outfitHistory');
+  const sorted = DATA.outfits.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,8);
+  if (sorted.length === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = sorted.map(o =>
+    `<div class="log-entry"><span class="log-date">${formatDate(o.date)}</span><span class="log-content">${o.desc}</span><span class="log-tag" style="background:var(--purple-bg);color:var(--purple);">${o.occasion}</span><span style="font-size:0.72rem;">${'⭐'.repeat(o.rating)}</span></div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════
+// IMAGE — Fragrance
+// ═══════════════════════════════════════
+function addFragrance() {
+  const name = document.getElementById('fragName').value.trim();
+  if (!name) return;
+  const existing = DATA.fragrances.findIndex(f => f.name === name);
+  const f = {
+    name,
+    occasion: document.getElementById('fragOccasion').value,
+    stock: document.getElementById('fragStock').value
+  };
+  if (existing >= 0) DATA.fragrances[existing] = f;
+  else DATA.fragrances.push(f);
+  document.getElementById('fragName').value = '';
+  save();
+  toast('🫧 Fragrance saved!', 'ok');
+}
+
+function renderFragranceList() {
+  const el = document.getElementById('fragranceList');
+  if (DATA.fragrances.length === 0) { el.innerHTML = ''; return; }
+  const stockColor = { Full: 'var(--green)', Half: 'var(--amber)', Low: 'var(--red)', Empty: 'var(--ink3)' };
+  el.innerHTML = DATA.fragrances.map((f,i) =>
+    `<div class="log-entry">
+      <span style="font-size:0.85rem;font-weight:600;flex:1;">${f.name}</span>
+      <span class="log-tag" style="background:var(--purple-bg);color:var(--purple);">${f.occasion}</span>
+      <span class="log-tag" style="background:${stockColor[f.stock]}20;color:${stockColor[f.stock]};">${f.stock}</span>
+      <button class="btn btn-sm btn-danger" onclick="DATA.fragrances.splice(${i},1);save();" style="padding:3px 8px;">✕</button>
+    </div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════
+// SUPPLEMENTS
+// ═══════════════════════════════════════
+function addSupplement() {
+  const name = document.getElementById('suppName').value.trim();
+  if (!name) return;
+  const existing = DATA.supplements.findIndex(s => s.name === name);
+  const s = {
+    name,
+    dosage: document.getElementById('suppDosage').value,
+    stock: parseInt(document.getElementById('suppStock').value) || 0,
+    expiry: document.getElementById('suppExpiry').value
+  };
+  if (existing >= 0) DATA.supplements[existing] = s;
+  else DATA.supplements.push(s);
+  document.getElementById('suppName').value = '';
+  document.getElementById('suppDosage').value = '';
+  document.getElementById('suppStock').value = '';
+  save();
+  toast('💊 Supplement saved!', 'ok');
+}
+
+function renderSupplementList() {
+  const el = document.getElementById('supplementList');
+  if (DATA.supplements.length === 0) { el.innerHTML = '<div style="text-align:center;color:var(--ink3);padding:16px;">No supplements tracked</div>'; return; }
+  el.innerHTML = DATA.supplements.map((s,i) => {
+    const stockColor = s.stock <= 7 ? 'var(--red)' : s.stock <= 14 ? 'var(--amber)' : 'var(--green)';
+    return `<div class="log-entry">
+      <span style="font-size:0.85rem;font-weight:600;min-width:120px;">${s.name}</span>
+      <span style="font-size:0.78rem;color:var(--ink2);">${s.dosage}</span>
+      <span class="log-tag" style="background:${stockColor}20;color:${stockColor};">${s.stock} days left</span>
+      ${s.expiry ? `<span style="font-size:0.7rem;color:var(--ink3);">Exp: ${formatDate(s.expiry)}</span>` : ''}
+      <button class="btn btn-sm btn-danger" onclick="DATA.supplements.splice(${i},1);save();" style="padding:3px 8px;">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// TABS & UTILS
+// ═══════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  const btn = document.querySelector(`.tab-btn[onclick="switchTab('${name}')"]`);
+  if (btn) btn.classList.add('active');
+}
+
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
