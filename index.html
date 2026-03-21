@@ -145,22 +145,24 @@ body::before { content:''; position:fixed; inset:0; background:radial-gradient(e
   <div class="tab-panel" id="tab-fitness">
     <div class="card">
       <div class="card-title"><div class="icon" style="background:var(--green-bg);color:var(--green);">💪</div> Log Workout</div>
+
+      <!-- 三分化 Today Banner -->
+      <div id="todayDayBanner" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:0.85rem;font-weight:600;"></div>
+
       <div class="form-row" style="grid-template-columns:auto 1fr 1fr auto;">
         <div class="form-group">
           <label>Date</label>
           <input type="date" id="gymDate">
         </div>
         <div class="form-group">
-          <label>Body Part</label>
+          <label>Training Day</label>
           <select id="gymPart">
-            <option value="Chest + Triceps">Chest + Triceps</option>
-            <option value="Back + Biceps">Back + Biceps</option>
-            <option value="Shoulders + Arms">Shoulders + Arms</option>
-            <option value="Legs">Legs</option>
-            <option value="Core">Core</option>
-            <option value="Full Body">Full Body</option>
-            <option value="Cardio">Cardio</option>
-            <option value="Others">Others</option>
+            <option value="Day A — 腿 + 肩膀">☀️ Day A — 腿 + 肩膀</option>
+            <option value="Day B — 胸 + 三头肌">🔥 Day B — 胸 + 三头肌</option>
+            <option value="Day C — 背 + 二头肌">💪 Day C — 背 + 二头肌</option>
+            <option value="有氧">🏃 有氧</option>
+            <option value="休息日">😴 休息日</option>
+            <option value="Others">Other</option>
           </select>
         </div>
         <div class="form-group">
@@ -180,11 +182,11 @@ body::before { content:''; position:fixed; inset:0; background:radial-gradient(e
       </div>
       <div class="form-row" style="grid-template-columns:1fr;">
         <div class="form-group">
-          <label>Notes</label>
-          <input type="text" id="gymNotes" placeholder="e.g. Bench press 80kg x 5, feeling strong...">
+          <label>Notes (重量/组数)</label>
+          <input type="text" id="gymNotes" placeholder="e.g. Bench press 80kg x 3 x 10, 杠铃卧推...">
         </div>
       </div>
-      <button class="btn btn-primary" onclick="logWorkout()" style="width:100%;padding:10px;">Log Workout</button>
+      <button class="btn btn-primary" onclick="logWorkout()" style="width:100%;padding:10px;">💪 打卡</button>
     </div>
 
     <!-- Body Measurements -->
@@ -463,6 +465,7 @@ let DATA = {
   try { DATA = JSON.parse(localStorage.getItem('daoyou_health') || 'null') || DATA; } catch(e) {}
 
   renderAll();
+  renderTodayBanner();
 })();
 
 function save() {
@@ -550,8 +553,45 @@ function calcStreak(dates) {
 // ═══════════════════════════════════════
 // FITNESS
 // ═══════════════════════════════════════
+// ── 三分化工具函数 ─────────────────────────────
+function getNextTrainingDay() {
+  var rotation = ['A','B','C'];
+  var parts = { A:'腿 + 肩膀', B:'胸 + 三头肌', C:'背 + 二头肌' };
+  var sorted = DATA.workouts
+    .filter(function(w){ return w.part && w.part.startsWith('Day'); })
+    .sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  if (sorted.length === 0) return { day:'A', content:'腿 + 肩膀' };
+  var lastDay = sorted[0].part.replace('Day ','').charAt(0);
+  var idx = rotation.indexOf(lastDay);
+  var nextIdx = (idx + 1) % 3;
+  var nextDay = rotation[nextIdx];
+  return { day: nextDay, content: parts[nextDay] };
+}
+
+function renderTodayBanner() {
+  var banner = document.getElementById('todayDayBanner');
+  if (!banner) return;
+  var next = getNextTrainingDay();
+  var colors = { A:'var(--accent)', B:'var(--green)', C:'var(--purple)' };
+  var icons  = { A:'🦵', B:'🔥', C:'💪' };
+  var c = colors[next.day] || 'var(--accent)';
+  banner.style.background = 'rgba(0,0,0,0.15)';
+  banner.style.borderLeft = '3px solid '+c;
+  banner.style.color = c;
+  banner.innerHTML = icons[next.day]+' 今日建议：<strong>Day '+next.day+' — '+next.content+'</strong>';
+  // Auto-select in dropdown
+  var sel = document.getElementById('gymPart');
+  if (sel) {
+    for (var i=0; i<sel.options.length; i++) {
+      if (sel.options[i].value.indexOf('Day '+next.day) === 0) {
+        sel.selectedIndex = i; break;
+      }
+    }
+  }
+}
+
 function logWorkout() {
-  const w = {
+  var w = {
     date: document.getElementById('gymDate').value,
     part: document.getElementById('gymPart').value,
     duration: parseInt(document.getElementById('gymDuration').value) || 0,
@@ -562,7 +602,8 @@ function logWorkout() {
   DATA.workouts.push(w);
   document.getElementById('gymNotes').value = '';
   save();
-  toast('💪 Workout logged!', 'ok');
+  renderTodayBanner();
+  toast('💪 打卡成功！', 'ok');
 }
 
 function logMeasurement() {
@@ -580,17 +621,29 @@ function logMeasurement() {
 }
 
 function renderWorkoutHistory() {
-  const el = document.getElementById('workoutHistory');
-  const sorted = DATA.workouts.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0, 15);
-  if (sorted.length === 0) { el.innerHTML = '<div style="text-align:center;color:var(--ink3);padding:16px;">No workouts yet</div>'; return; }
-  el.innerHTML = sorted.map((w,i) => {
-    const intColor = w.intensity >= 4 ? 'var(--red)' : w.intensity >= 3 ? 'var(--amber)' : 'var(--green)';
-    return `<div class="log-entry">
-      <span class="log-date">${formatDate(w.date)}</span>
-      <span class="log-content"><strong>${w.part}</strong> · ${w.duration}min ${w.notes ? '· ' + w.notes : ''}</span>
-      <span class="log-tag" style="background:${intColor}20;color:${intColor};">${w.intensity}/5</span>
-      <button class="btn btn-sm btn-danger" onclick="DATA.workouts.splice(DATA.workouts.length-1-${i},1);save();toast('Deleted','ok');" style="padding:3px 8px;">✕</button>
-    </div>`;
+  var el = document.getElementById('workoutHistory');
+  var sorted = DATA.workouts.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); }).slice(0, 20);
+  if (sorted.length === 0) { el.innerHTML = '<div style="text-align:center;color:var(--ink3);padding:16px;">No workouts yet — 打第一张卡吧！</div>'; return; }
+
+  // Day color map
+  function getDayColor(part) {
+    if (!part) return { bg:'rgba(255,255,255,0.05)', border:'rgba(255,255,255,0.1)', text:'var(--ink2)' };
+    if (part.indexOf('Day A') === 0) return { bg:'rgba(251,191,36,0.06)', border:'rgba(251,191,36,0.25)', text:'var(--amber)' };
+    if (part.indexOf('Day B') === 0) return { bg:'rgba(74,222,128,0.06)', border:'rgba(74,222,128,0.25)', text:'var(--green)' };
+    if (part.indexOf('Day C') === 0) return { bg:'rgba(167,139,250,0.06)', border:'rgba(167,139,250,0.25)', text:'var(--purple)' };
+    return { bg:'rgba(255,255,255,0.04)', border:'rgba(255,255,255,0.1)', text:'var(--ink3)' };
+  }
+
+  el.innerHTML = sorted.map(function(w, i) {
+    var intColor = w.intensity >= 4 ? 'var(--red)' : w.intensity >= 3 ? 'var(--amber)' : 'var(--green)';
+    var dc = getDayColor(w.part);
+    return '<div class="log-entry" style="background:'+dc.bg+';border-color:'+dc.border+';margin-bottom:6px;">'
+      + '<span class="log-date">'+formatDate(w.date)+'</span>'
+      + '<span class="log-content" style="color:'+dc.text+';font-weight:600;">'+w.part+'</span>'
+      + '<span class="log-content" style="color:var(--ink3);">'+w.duration+'min'+(w.notes ? ' · '+w.notes : '')+'</span>'
+      + '<span class="log-tag" style="background:'+intColor+'20;color:'+intColor+';">'+w.intensity+'/5</span>'
+      + '<button class="btn btn-sm btn-danger" onclick="DATA.workouts.splice(DATA.workouts.indexOf(DATA.workouts.find(function(x,j){return j===(DATA.workouts.length-1-'+i+');})),1);save();renderWorkoutHistory();toast(\'Deleted\',\'ok\');" style="padding:3px 8px;">✕</button>'
+      + '</div>';
   }).join('');
 }
 
