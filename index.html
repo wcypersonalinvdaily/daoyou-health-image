@@ -186,7 +186,10 @@ body::before { content:''; position:fixed; inset:0; background:radial-gradient(e
           <input type="text" id="gymNotes" placeholder="e.g. Bench press 80kg x 3 x 10, 杠铃卧推...">
         </div>
       </div>
-      <button class="btn btn-primary" onclick="logWorkout()" style="width:100%;padding:10px;">💪 打卡</button>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="btn btn-primary" onclick="logWorkout()" style="flex:1;padding:10px;">💪 打卡</button>
+        <button class="btn" onclick="pullWorkoutsFromSheet();toast('同步中...','ok');" style="padding:10px 14px;background:var(--surface2);border:1px solid var(--border);">🔄 同步</button>
+      </div>
     </div>
 
     <!-- Body Measurements -->
@@ -457,6 +460,42 @@ let DATA = {
   supplements: []
 };
 
+// ── Google Sheet 后端配置 ──────────────────────────
+const FITNESS_BACKEND = 'https://script.google.com/macros/s/AKfycbxxp1f_y5kXl_rPUgJORcPb9y1oFX7eoxV9QN2lvEoQbWqBraH7gLXgljWSbOOoSHjU2A/exec';
+
+async function pushToSheet(action, payload) {
+  try {
+    const res = await fetch(FITNESS_BACKEND, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain'},
+      body: JSON.stringify({action, ...payload})
+    });
+    const json = await res.json();
+    return json;
+  } catch(e) {
+    console.warn('Sheet sync failed:', e.message);
+    return {success: false, error: e.message};
+  }
+}
+
+async function pullWorkoutsFromSheet() {
+  try {
+    const res = await fetch(FITNESS_BACKEND + '?action=getWorkouts');
+    const json = await res.json();
+    if (json.success && json.workouts && json.workouts.length > 0) {
+      // Merge: sheet records take priority, keep local-only records
+      const sheetDates = new Set(json.workouts.map(w => w.date + '|' + w.part));
+      const localOnly = DATA.workouts.filter(w => !sheetDates.has(w.date + '|' + w.part));
+      DATA.workouts = [...json.workouts, ...localOnly].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+      save();
+      renderWorkoutHistory();
+      renderTodayBanner();
+    }
+  } catch(e) {
+    console.warn('Pull failed:', e.message);
+  }
+}
+
 (function init() {
   document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-SG', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
   const today = new Date().toISOString().slice(0,10);
@@ -466,6 +505,8 @@ let DATA = {
 
   renderAll();
   renderTodayBanner();
+  // Auto-pull from Sheet on load
+  setTimeout(pullWorkoutsFromSheet, 1500);
 })();
 
 function save() {
@@ -603,7 +644,11 @@ function logWorkout() {
   document.getElementById('gymNotes').value = '';
   save();
   renderTodayBanner();
-  toast('💪 打卡成功！', 'ok');
+  toast('💪 打卡成功！同步中...', 'ok');
+  pushToSheet('logWorkout', w).then(r => {
+    if (r && r.success) toast('💪 打卡成功！已同步到Sheet ✅', 'ok');
+    else toast('💪 本地已保存，Sheet同步失败（不影响使用）', 'ok');
+  });
 }
 
 function logMeasurement() {
