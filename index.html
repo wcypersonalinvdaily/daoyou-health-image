@@ -246,6 +246,24 @@
           <div class="line-list" id="snapshot-list"></div>
         </div>
       </div>
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="card">
+          <h2>Health Files</h2>
+          <p class="sub">上传体检报告、化验单、处方、照片等到道友系统/Health System/{YYYY-MM}/。</p>
+          <div class="grid grid-2">
+            <div class="field"><label>Date</label><input type="date" id="health-file-date"></div>
+            <div class="field"><label>File Type</label><input type="text" id="health-file-type" placeholder="Medical Report / Blood Test / Prescription"></div>
+          </div>
+          <div class="field"><label>Description</label><input type="text" id="health-file-description" placeholder="例如：2026 Q2 体检报告"></div>
+          <div class="field"><label>File</label><input type="file" id="health-file-input" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.csv"></div>
+          <div class="btn-row"><button class="btn btn-primary" onclick="uploadHealthFile()">Upload Health File</button></div>
+        </div>
+        <div class="card">
+          <h2>Recent Health Files</h2>
+          <p class="sub">最近上传到 Health System 的文件。</p>
+          <div class="line-list" id="health-files-list"></div>
+        </div>
+      </div>
     </section>
   </div>
 
@@ -260,7 +278,7 @@
 
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbw9l1ngULESJwc4CXkoy42joJ7Q3CweIQzDWMpNf1WA0z5ksICqDMo5VyglWtRbMKml/exec';
-    const state = { workouts: [], metrics: [], sleep: [], goals: [], dashboard: null };
+    const state = { workouts: [], metrics: [], sleep: [], goals: [], files: [], dashboard: null };
 
     function today(){ return new Date().toISOString().slice(0,10); }
     function money(v){ return Number(v || 0).toFixed(1); }
@@ -289,22 +307,25 @@
 
     async function loadAll(){
       setStatus('Loading');
-      const [w,m,s,g,d] = await Promise.all([
+      const [w,m,s,g,f,d] = await Promise.all([
         apiFetch('getWorkouts'),
         apiFetch('getMetrics'),
         apiFetch('getSleep'),
         apiFetch('getGoals'),
+        apiFetch('getHealthFiles'),
         apiFetch('getDashboard')
       ]);
       state.workouts = w.workouts || [];
       state.metrics = m.metrics || [];
       state.sleep = s.sleep || [];
       state.goals = g.goals || [];
+      state.files = f.files || [];
       state.dashboard = d.dashboard || null;
       renderWorkouts();
       renderMetrics();
       renderSleep();
       renderDashboard();
+      renderHealthFiles();
       setStatus('Ready');
     }
 
@@ -374,6 +395,47 @@
         document.getElementById('goal-status').value='Active';
         await loadAll();
       }catch(err){ alert(err.message || 'Failed to save goal'); setStatus('Error'); }
+    }
+
+    function guessMimeType(name){
+      const lower = String(name || '').toLowerCase();
+      if(lower.endsWith('.pdf')) return 'application/pdf';
+      if(lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+      if(lower.endsWith('.png')) return 'image/png';
+      if(lower.endsWith('.xlsx')) return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      if(lower.endsWith('.xls')) return 'application/vnd.ms-excel';
+      if(lower.endsWith('.csv')) return 'text/csv';
+      return 'application/octet-stream';
+    }
+
+    function fileToBase64(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function uploadHealthFile(){
+      const file = document.getElementById('health-file-input').files[0];
+      if(!file){ alert('Please choose a file first.'); return; }
+      try{
+        setStatus('Uploading');
+        const fileData = await fileToBase64(file);
+        await apiFetch('uploadHealthFile','POST',{
+          date: document.getElementById('health-file-date').value,
+          fileType: document.getElementById('health-file-type').value.trim() || 'Health_File',
+          description: document.getElementById('health-file-description').value.trim(),
+          fileName: file.name,
+          mimeType: file.type || guessMimeType(file.name),
+          fileData
+        });
+        document.getElementById('health-file-description').value='';
+        document.getElementById('health-file-type').value='';
+        document.getElementById('health-file-input').value='';
+        await loadAll();
+      }catch(err){ alert(err.message || 'Failed to upload health file'); setStatus('Error'); }
     }
 
     async function deleteWorkout(id){
@@ -488,13 +550,22 @@
       snapshot.innerHTML = lines.length ? lines.map(x=>`<div class="line-row"><span>${esc(x.k)}</span><strong>${esc(x.v)}</strong></div>`).join('') : '<div class="empty">暂无快照数据。</div>';
     }
 
+    function renderHealthFiles(){
+      const box = document.getElementById('health-files-list');
+      const rows = [...(state.files || [])].slice(0, 8);
+      if(!rows.length){ box.innerHTML = '<div class="empty">还没有健康文件。</div>'; return; }
+      box.innerHTML = rows.map(r => `<div class="line-row"><span>${esc(r.Date || '-')} · ${esc(r.FileType || 'File')}</span><a href="${esc(r.DriveURL || '#')}" target="_blank" rel="noopener">${esc(r.FileName || 'Open')}</a></div>`).join('');
+    }
+
     function resetWorkoutForm(){ document.getElementById('workout-date').value=today(); document.getElementById('workout-type').value=''; document.getElementById('workout-duration').value='60'; document.getElementById('workout-sets').value=''; document.getElementById('workout-reps').value=''; document.getElementById('workout-weight').value=''; document.getElementById('workout-notes').value=''; }
     function resetMetricForm(){ document.getElementById('metric-date').value=today(); document.getElementById('metric-weight').value=''; document.getElementById('metric-bodyfat').value=''; document.getElementById('metric-chest').value=''; document.getElementById('metric-waist').value=''; document.getElementById('metric-arms').value=''; document.getElementById('metric-notes').value=''; }
     function resetSleepForm(){ document.getElementById('sleep-date').value=today(); document.getElementById('sleep-duration').value=''; document.getElementById('sleep-time').value='23:30'; document.getElementById('wake-time').value='07:00'; document.getElementById('sleep-quality').value='4'; }
+    function resetHealthFileForm(){ document.getElementById('health-file-date').value=today(); document.getElementById('health-file-type').value=''; document.getElementById('health-file-description').value=''; document.getElementById('health-file-input').value=''; }
 
     resetWorkoutForm();
     resetMetricForm();
     resetSleepForm();
+    resetHealthFileForm();
     loadAll().catch(err => { console.error(err); setStatus('Error'); alert(err.message || 'Failed to load health system'); });
   </script>
 </body>
