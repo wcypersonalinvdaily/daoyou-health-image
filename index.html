@@ -1,896 +1,501 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Daoyou · Health & Image</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600;700&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Daoyou Health System</title>
+  <style>
+    :root{
+      --bg:#0a0f1d;
+      --panel:#121a2c;
+      --panel-2:#17233a;
+      --panel-3:#1e2d49;
+      --border:#2a3a5c;
+      --text:#eef4ff;
+      --muted:#98a8c8;
+      --accent:#58a6ff;
+      --accent-2:#7dc3ff;
+      --good:#34d399;
+      --warn:#fbbf24;
+      --danger:#fb7185;
+      --shadow:0 16px 36px rgba(0,0,0,.34);
+      --radius:18px;
+      --safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,#09101b 0%,#0b1322 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{min-height:100vh}
+    button,input,select,textarea{font:inherit}
+    .app{max-width:1100px;margin:0 auto;padding:16px 14px calc(96px + var(--safe-bottom))}
+    .hero{background:rgba(18,26,44,.88);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.06);box-shadow:var(--shadow);padding:18px;border-radius:22px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start;position:sticky;top:10px;z-index:8}
+    .hero h1{margin:0 0 6px;font-size:1.18rem}
+    .hero p{margin:0;color:var(--muted);line-height:1.45;font-size:.93rem}
+    .pill{padding:10px 14px;border-radius:999px;background:rgba(88,166,255,.12);border:1px solid rgba(88,166,255,.18);color:var(--accent-2);font-weight:800;font-size:.84rem;white-space:nowrap}
 
-:root {
-  --bg: #0c0f1a;
-  --bg2: #111827;
-  --surface: rgba(255,255,255,0.04);
-  --surface2: rgba(255,255,255,0.07);
-  --glass: rgba(255,255,255,0.06);
-  --glass-border: rgba(255,255,255,0.08);
-  --ink: #f1f5f9;
-  --ink2: rgba(255,255,255,0.55);
-  --ink3: rgba(255,255,255,0.25);
-  --accent: #22d3ee;
-  --accent-bg: rgba(34,211,238,0.1);
-  --green: #4ade80;
-  --green-bg: rgba(74,222,128,0.1);
-  --red: #f87171;
-  --red-bg: rgba(248,113,113,0.1);
-  --amber: #fbbf24;
-  --amber-bg: rgba(251,191,36,0.1);
-  --purple: #a78bfa;
-  --purple-bg: rgba(167,139,250,0.1);
-  --pink: #f472b6;
-  --pink-bg: rgba(244,114,182,0.1);
-  --r: 14px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.3);
-}
+    .tabs{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + var(--safe-bottom));background:linear-gradient(180deg,rgba(10,15,29,0) 0%,rgba(10,15,29,.9) 25%,rgba(10,15,29,1) 100%);z-index:20}
+    .tabs-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:rgba(18,26,44,.94);border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:10px;box-shadow:var(--shadow)}
+    .tab-btn{border:none;height:48px;border-radius:14px;background:transparent;color:var(--muted);font-weight:800;cursor:pointer;transition:.2s}
+    .tab-btn.active{background:linear-gradient(180deg,rgba(88,166,255,.2),rgba(88,166,255,.08));color:var(--text);border:1px solid rgba(88,166,255,.16)}
 
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:var(--bg); font-family:'Sora',sans-serif; color:var(--ink); min-height:100vh; }
-body::before { content:''; position:fixed; inset:0; background:radial-gradient(ellipse at 20% 20%, rgba(34,211,238,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(167,139,250,0.05) 0%, transparent 50%); pointer-events:none; z-index:0; }
+    .panel{display:none;margin-top:16px}
+    .panel.active{display:block}
+    .grid{display:grid;gap:16px}
+    .grid-2{grid-template-columns:1fr 1fr}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,.06);box-shadow:var(--shadow);border-radius:var(--radius);padding:16px}
+    .card h2,.card h3{margin:0 0 14px}
+    .sub{color:var(--muted);font-size:.88rem;line-height:1.45}
+    .field{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+    .field label{font-size:.84rem;color:var(--muted);font-weight:700}
+    .field input,.field select,.field textarea{width:100%;background:var(--panel-2);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:13px 14px;outline:none}
+    .field textarea{min-height:110px;resize:vertical}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(88,166,255,.12)}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{border:none;border-radius:14px;padding:13px 16px;font-weight:800;cursor:pointer}
+    .btn-primary{background:linear-gradient(180deg,var(--accent),#3f82ff);color:#fff}
+    .btn-secondary{background:var(--panel-3);color:var(--text);border:1px solid rgba(255,255,255,.08)}
+    .btn-danger{background:rgba(251,113,133,.12);color:#ff9fb1;border:1px solid rgba(251,113,133,.24)}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
 
-.page { max-width:900px; margin:0 auto; padding:20px 16px 80px; position:relative; z-index:1; }
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+    .stat{background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+    .stat .k{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+    .stat .v{font-size:1.3rem;font-weight:900}
 
-.header { text-align:center; margin-bottom:28px; }
-.header h1 { font-size:1.4rem; font-weight:300; letter-spacing:0.15em; }
-.header h1 em { font-style:normal; color:var(--accent); font-weight:600; }
-.header .sub { font-size:0.72rem; color:var(--ink3); margin-top:6px; letter-spacing:0.2em; text-transform:uppercase; }
+    .list{display:grid;gap:10px}
+    .item{background:var(--panel-2);border:1px solid rgba(255,255,255,.05);padding:14px;border-radius:16px}
+    .item-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:8px}
+    .item-title{font-weight:800;font-size:.98rem}
+    .item-sub{color:var(--muted);font-size:.86rem;line-height:1.45}
+    .badges{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+    .badge{padding:7px 10px;border-radius:999px;background:rgba(88,166,255,.11);border:1px solid rgba(88,166,255,.18);color:var(--accent-2);font-size:.76rem;font-weight:800}
 
-/* Tabs */
-.tabs { display:flex; gap:4px; margin-bottom:20px; background:var(--surface); border-radius:var(--r); padding:4px; border:1px solid var(--glass-border); }
-.tab-btn { flex:1; padding:10px 6px; border:none; background:transparent; font-family:inherit; font-size:0.75rem; font-weight:400; cursor:pointer; color:var(--ink3); transition:all 0.3s; border-radius:10px; letter-spacing:0.03em; }
-.tab-btn.active { color:var(--accent); background:rgba(34,211,238,0.1); font-weight:600; }
-.tab-panel { display:none; }
-.tab-panel.active { display:block; }
+    .goal-grid{display:grid;gap:10px}
+    .goal{padding:14px;border-radius:16px;background:var(--panel-2);border:1px solid rgba(255,255,255,.05)}
+    .goal-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
+    .goal-name{font-weight:800}
+    .progress{height:10px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:10px}
+    .progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--good));width:0}
 
-/* Cards */
-.card { background:var(--glass); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--glass-border); border-radius:var(--r); padding:20px; margin-bottom:14px; box-shadow:var(--shadow); }
-.card-title { display:flex; align-items:center; gap:10px; margin-bottom:16px; font-size:0.88rem; font-weight:500; letter-spacing:0.04em; }
-.card-title .icon { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+    .chart{display:flex;align-items:flex-end;gap:8px;height:220px;padding:8px 0 26px}
+    .bar-group{display:flex;flex-direction:column;align-items:center;gap:7px;flex:1;min-width:34px}
+    .bar{width:100%;max-width:54px;border-radius:10px 10px 0 0;background:linear-gradient(180deg,var(--accent-2),#3975ff);min-height:4px}
+    .bar-label{font-size:.73rem;color:var(--muted)}
+    .line-list{display:grid;gap:8px}
+    .line-row{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:14px;background:var(--panel-2);border:1px solid rgba(255,255,255,.05)}
 
-.form-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:12px; }
-.form-group { display:flex; flex-direction:column; gap:4px; }
-.form-group label { font-size:0.68rem; font-weight:500; color:var(--ink3); text-transform:uppercase; letter-spacing:0.06em; }
-.form-group input, .form-group select, .form-group textarea { padding:9px 12px; border:1px solid var(--glass-border); border-radius:8px; font-size:0.82rem; font-family:inherit; background:var(--surface); color:var(--ink); }
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px rgba(34,211,238,0.15); }
+    .empty{padding:24px 12px;text-align:center;color:var(--muted)}
 
-.btn { padding:8px 16px; border:1px solid var(--glass-border); border-radius:8px; font-size:0.78rem; font-weight:500; cursor:pointer; background:var(--surface); color:var(--ink); font-family:inherit; transition:all 0.2s; letter-spacing:0.02em; }
-.btn:hover { border-color:var(--accent); color:var(--accent); }
-.btn-primary { background:linear-gradient(135deg, var(--accent), #06b6d4); color:#0c0f1a; border:none; font-weight:600; }
-.btn-primary:hover { opacity:0.9; }
-.btn-sm { padding:5px 10px; font-size:0.7rem; }
-.btn-danger { border-color:rgba(248,113,113,0.3); color:var(--red); }
-
-/* Stats */
-.stats-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(100px,1fr)); gap:10px; margin-bottom:16px; }
-.stat { text-align:center; padding:16px 10px; border-radius:12px; background:var(--surface); border:1px solid var(--glass-border); }
-.stat .sv { font-size:1.6rem; font-weight:700; }
-.stat .sl { font-size:0.65rem; color:var(--ink3); margin-top:4px; letter-spacing:0.06em; text-transform:uppercase; }
-
-/* Log entries */
-.log-entry { display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--glass-border); border-radius:10px; margin-bottom:8px; background:var(--surface); transition:all 0.2s; }
-.log-entry:hover { border-color:rgba(34,211,238,0.2); }
-.log-date { font-size:0.75rem; font-weight:600; color:var(--accent); min-width:75px; }
-.log-content { flex:1; font-size:0.8rem; color:var(--ink2); }
-.log-tag { font-size:0.68rem; padding:3px 10px; border-radius:999px; font-weight:600; }
-
-/* Rating dots */
-.rating { display:flex; gap:4px; }
-.rating .dot { width:10px; height:10px; border-radius:50%; border:1px solid var(--glass-border); cursor:pointer; transition:all 0.2s; }
-.rating .dot.active { border-color:var(--accent); }
-
-/* Progress bar */
-.progress-bar { height:6px; border-radius:3px; background:var(--surface2); overflow:hidden; margin-top:6px; }
-.progress-fill { height:100%; border-radius:3px; transition:width 0.4s ease; }
-
-/* Streak */
-.streak-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; font-size:0.72rem; font-weight:600; }
-
-/* Toast */
-.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); padding:12px 24px; border-radius:10px; font-size:0.82rem; font-weight:500; color:#0c0f1a; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; }
-.toast.show { opacity:1; }
-.toast.ok { background:var(--green); }
-.toast.err { background:var(--red); }
-
-@media(max-width:600px) {
-  .form-row { grid-template-columns:1fr 1fr; }
-  .stats-row { grid-template-columns:repeat(3,1fr); }
-  .tab-btn { font-size:0.68rem; padding:8px 4px; }
-}
-</style>
+    @media (max-width:900px){
+      .grid-2,.grid-3,.stats{grid-template-columns:1fr}
+      .hero{position:relative;top:auto;flex-direction:column}
+    }
+    @media (max-width:640px){
+      .btn{width:100%}
+      .tabs-inner{gap:8px}
+      .tab-btn{font-size:.8rem;padding:0 4px}
+      .item-top,.goal-top{flex-direction:column;align-items:flex-start}
+    }
+  </style>
 </head>
 <body>
-<div class="page">
+  <div class="app">
+    <div class="hero">
+      <div>
+        <h1>🫀 Daoyou Health System</h1>
+        <p>训练、体重体脂、睡眠、目标，全都记在一个系统里。手机优先，现场可直接录。</p>
+      </div>
+      <div class="pill" id="app-status">Ready</div>
+    </div>
 
-  <div class="header">
-    <h1><em>道友</em> · Health & Image</h1>
-    <div class="sub" id="dateDisplay"></div>
+    <section class="panel active" id="tab-workout">
+      <div class="grid grid-2">
+        <div class="card">
+          <h2>Workout</h2>
+          <p class="sub">记录今天训练内容：类型、时长、组数、次数、重量、备注。</p>
+          <div class="grid grid-2">
+            <div class="field"><label>Date</label><input type="date" id="workout-date"></div>
+            <div class="field"><label>Exercise Type</label><input type="text" id="workout-type" placeholder="Chest / Back / Legs / Cardio"></div>
+          </div>
+          <div class="grid grid-3">
+            <div class="field"><label>Duration (min)</label><input type="number" id="workout-duration" min="0" value="60"></div>
+            <div class="field"><label>Sets</label><input type="number" id="workout-sets" min="0" placeholder="4"></div>
+            <div class="field"><label>Reps</label><input type="number" id="workout-reps" min="0" placeholder="12"></div>
+          </div>
+          <div class="field"><label>Weight (kg)</label><input type="number" id="workout-weight" min="0" step="0.1" placeholder="20"></div>
+          <div class="field"><label>Notes</label><textarea id="workout-notes" placeholder="今天训练状态、动作、强度、备注"></textarea></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="addWorkout()">Save Workout</button>
+            <button class="btn btn-secondary" onclick="resetWorkoutForm()">Reset</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Recent Workouts</h2>
+          <p class="sub">最近训练记录，可直接删除错误记录。</p>
+          <div class="list" id="workout-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-body">
+      <div class="grid grid-2">
+        <div class="card">
+          <h2>Body</h2>
+          <p class="sub">体重、体脂、胸围、腰围、手臂围，一次录全。</p>
+          <div class="grid grid-2">
+            <div class="field"><label>Date</label><input type="date" id="metric-date"></div>
+            <div class="field"><label>Weight (kg)</label><input type="number" id="metric-weight" step="0.1"></div>
+          </div>
+          <div class="grid grid-3">
+            <div class="field"><label>Body Fat (%)</label><input type="number" id="metric-bodyfat" step="0.1"></div>
+            <div class="field"><label>Chest (cm)</label><input type="number" id="metric-chest" step="0.1"></div>
+            <div class="field"><label>Waist (cm)</label><input type="number" id="metric-waist" step="0.1"></div>
+          </div>
+          <div class="grid grid-2">
+            <div class="field"><label>Arms (cm)</label><input type="number" id="metric-arms" step="0.1"></div>
+            <div class="field"><label>Notes</label><input type="text" id="metric-notes" placeholder="例如：早上空腹"></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="addMetric()">Save Body Data</button>
+            <button class="btn btn-secondary" onclick="resetMetricForm()">Reset</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Recent Body Metrics</h2>
+          <p class="sub">最近身体数据记录。</p>
+          <div class="list" id="metric-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-sleep">
+      <div class="grid grid-2">
+        <div class="card">
+          <h2>Sleep</h2>
+          <p class="sub">记录睡觉时间、起床时间、时长和主观质量。</p>
+          <div class="grid grid-2">
+            <div class="field"><label>Date</label><input type="date" id="sleep-date"></div>
+            <div class="field"><label>Duration (hours)</label><input type="number" id="sleep-duration" step="0.1" placeholder="7.5"></div>
+          </div>
+          <div class="grid grid-2">
+            <div class="field"><label>Sleep Time</label><input type="time" id="sleep-time" value="23:30"></div>
+            <div class="field"><label>Wake Time</label><input type="time" id="wake-time" value="07:00"></div>
+          </div>
+          <div class="field"><label>Quality</label>
+            <select id="sleep-quality">
+              <option value="1">1 - Very Bad</option>
+              <option value="2">2 - Bad</option>
+              <option value="3">3 - OK</option>
+              <option value="4" selected>4 - Good</option>
+              <option value="5">5 - Great</option>
+            </select>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="addSleep()">Save Sleep Log</button>
+            <button class="btn btn-secondary" onclick="resetSleepForm()">Reset</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Recent Sleep Logs</h2>
+          <p class="sub">睡眠记录概览。</p>
+          <div class="list" id="sleep-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-dashboard">
+      <div class="stats" id="dashboard-stats"></div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h2>Weight Trend</h2>
+          <p class="sub">按日期看体重变化。</p>
+          <div class="line-list" id="weight-trend"></div>
+        </div>
+        <div class="card">
+          <h2>Workout Frequency</h2>
+          <p class="sub">按月份看训练频率。</p>
+          <div class="chart" id="workout-chart"></div>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="card">
+          <h2>Health Goals</h2>
+          <p class="sub">目标可直接更新当前值、截止时间和状态。</p>
+          <div class="field"><label>Goal</label><input type="text" id="goal-name" placeholder="例如：体重降到 75kg"></div>
+          <div class="grid grid-3">
+            <div class="field"><label>Target</label><input type="text" id="goal-target" placeholder="75kg"></div>
+            <div class="field"><label>Current</label><input type="text" id="goal-current" placeholder="78.5kg"></div>
+            <div class="field"><label>Deadline</label><input type="date" id="goal-deadline"></div>
+          </div>
+          <div class="field"><label>Status</label>
+            <select id="goal-status">
+              <option value="Active">Active</option>
+              <option value="On Track">On Track</option>
+              <option value="Needs Work">Needs Work</option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="saveGoal()">Save Goal</button>
+          </div>
+          <div class="goal-grid" id="goal-list" style="margin-top:16px"></div>
+        </div>
+        <div class="card">
+          <h2>Recent Snapshot</h2>
+          <p class="sub">快速看最近训练、睡眠、身体数据。</p>
+          <div class="line-list" id="snapshot-list"></div>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('dashboard')">Overview</button>
-    <button class="tab-btn" onclick="switchTab('fitness')">💪 Fitness</button>
-    <button class="tab-btn" onclick="switchTab('health')">🫀 Daily</button>
-    <button class="tab-btn" onclick="switchTab('image')">✨ Image</button>
-    <button class="tab-btn" onclick="switchTab('supplements')">💊 Supps</button>
-  </div>
-
-  <!-- ═══ OVERVIEW ═══ -->
-  <div class="tab-panel active" id="tab-dashboard">
-    <div class="stats-row" id="overviewStats"></div>
-
-    <!-- Streaks -->
-    <div class="card">
-      <div class="card-title"><div class="icon" style="background:var(--accent-bg);color:var(--accent);">🔥</div> Streaks</div>
-      <div id="streakDisplay" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="card">
-      <div class="card-title"><div class="icon" style="background:var(--purple-bg);color:var(--purple);">📋</div> Recent Activity</div>
-      <div id="recentActivity"></div>
+    <div class="tabs-inner">
+      <button class="tab-btn active" data-tab="workout" onclick="switchTab('workout')">Workout</button>
+      <button class="tab-btn" data-tab="body" onclick="switchTab('body')">Body</button>
+      <button class="tab-btn" data-tab="sleep" onclick="switchTab('sleep')">Sleep</button>
+      <button class="tab-btn" data-tab="dashboard" onclick="switchTab('dashboard')">Dashboard</button>
     </div>
   </div>
 
-  <!-- ═══ FITNESS ═══ -->
-  <div class="tab-panel" id="tab-fitness">
-    <div class="card">
-      <div class="card-title"><div class="icon" style="background:var(--green-bg);color:var(--green);">💪</div> Log Workout</div>
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw9l1ngULESJwc4CXkoy42joJ7Q3CweIQzDWMpNf1WA0z5ksICqDMo5VyglWtRbMKml/exec';
+    const state = { workouts: [], metrics: [], sleep: [], goals: [], dashboard: null };
 
-      <!-- 三分化 Today Banner -->
-      <div id="todayDayBanner" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:0.85rem;font-weight:600;"></div>
+    function today(){ return new Date().toISOString().slice(0,10); }
+    function money(v){ return Number(v || 0).toFixed(1); }
+    function esc(v){ return String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
+    function setStatus(v){ document.getElementById('app-status').textContent = v; }
 
-      <div class="form-row" style="grid-template-columns:auto 1fr 1fr auto;">
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" id="gymDate">
-        </div>
-        <div class="form-group">
-          <label>Training Day</label>
-          <select id="gymPart">
-            <option value="Day A — 腿 + 肩膀">☀️ Day A — 腿 + 肩膀</option>
-            <option value="Day B — 胸 + 三头肌">🔥 Day B — 胸 + 三头肌</option>
-            <option value="Day C — 背 + 二头肌">💪 Day C — 背 + 二头肌</option>
-            <option value="有氧">🏃 有氧</option>
-            <option value="休息日">😴 休息日</option>
-            <option value="Others">Other</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Duration (min)</label>
-          <input type="number" id="gymDuration" value="60" min="0">
-        </div>
-        <div class="form-group">
-          <label>Intensity</label>
-          <select id="gymIntensity">
-            <option value="1">1 - Light</option>
-            <option value="2">2 - Easy</option>
-            <option value="3" selected>3 - Moderate</option>
-            <option value="4">4 - Hard</option>
-            <option value="5">5 - Max</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row" style="grid-template-columns:1fr;">
-        <div class="form-group">
-          <label>Notes (重量/组数)</label>
-          <input type="text" id="gymNotes" placeholder="e.g. Bench press 80kg x 3 x 10, 杠铃卧推...">
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:4px;">
-        <button class="btn btn-primary" onclick="logWorkout()" style="flex:1;padding:10px;">💪 打卡</button>
-        <button class="btn" onclick="pullWorkoutsFromSheet();toast('同步中...','ok');" style="padding:10px 14px;background:var(--surface2);border:1px solid var(--border);">🔄 同步</button>
-      </div>
-    </div>
-
-    <!-- Body Measurements -->
-    <div class="card">
-      <div class="card-title"><div class="icon" style="background:var(--amber-bg);color:var(--amber);">📐</div> Body Measurements</div>
-      <div class="form-row" style="grid-template-columns:repeat(5,1fr);">
-        <div class="form-group"><label>Weight (kg)</label><input type="number" id="bodyWeight" step="0.1" placeholder="75.0"></div>
-        <div class="form-group"><label>Chest (cm)</label><input type="number" id="bodyChest" step="0.1" placeholder="100"></div>
-        <div class="form-group"><label>Waist (cm)</label><input type="number" id="bodyWaist" step="0.1" placeholder="80"></div>
-        <div class="form-group"><label>Arms (cm)</label><input type="number" id="bodyArms" step="0.1" placeholder="38"></div>
-        <div class="form-group"><label>Photo Link</label><input type="text" id="bodyPhoto" placeholder="Google Drive link..."></div>
-      </div>
-      <button class="btn" onclick="logMeasurement()" style="width:100%;padding:8px;">Save Measurement</button>
-    </div>
-
-    <!-- Workout History -->
-    <div class="card">
-      <div class="card-title"><div class="icon" style="background:var(--surface2);">📜</div> Workout History</div>
-      <div id="workoutHistory"></div>
-    </div>
-  </div>
-
-  <!-- ═══ DAILY HEALTH ═══ -->
-  <div class="tab-panel" id="tab-health">
-    <div class="card">
-      <div class="card-title"><div class="icon" style="background:var(--accent-bg);color:var(--accent);">🫀</div> Daily Health Log</div>
-      <div class="form-row" style="grid-template-columns:auto 1fr 1fr 1fr;">
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" id="healthDate">
-        </div>
-        <div class="form-group">
-          <label>Breakfast</label>
-          <input type="text" id="mealBreakfast" placeholder="e.g. Oats + eggs">
-        </div>
-        <div class="form-group">
-          <label>Lunch</label>
-          <input type="text" id="mealLunch" placeholder="e.g. Chicken rice">
-        </div>
-        <div class="form-group">
-          <label>Dinner</label>
-          <input type="text" id="mealDinner" placeholder="e.g. Salmon + salad">
-        </div>
-      </div>
-      <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr;">
-        <div class="form-group">
-          <label>Diet Rating</label>
-          <select id="dietRating">
-            <option value="Good">🟢 Good</option>
-            <option value="Ok">🟡 Ok</option>
-            <option value="Bad">🔴 Bad</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Sleep Time</label>
-          <input type="time" id="sleepTime" value="23:00">
-        </div>
-        <div class="form-group">
-          <label>Wake Time</label>
-          <input type="time" id="wakeTime" value="06:30">
-        </div>
-        <div class="form-group">
-          <label>Sleep Quality</label>
-          <select id="sleepQuality">
-            <option value="1">1 - Terrible</option>
-            <option value="2">2 - Poor</option>
-            <option value="3" selected>3 - Ok</option>
-            <option value="4">4 - Good</option>
-            <option value="5">5 - Great</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row" style="grid-template-columns:1fr;">
-        <div class="form-group">
-          <label>Water Intake (glasses)</label>
-          <input type="number" id="waterIntake" value="8" min="0">
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="logDailyHealth()" style="width:100%;padding:10px;">Save Daily Log</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title"><div class="icon" style="background:var(--surface2);">📜</div> Health History</div>
-      <div id="healthHistory"></div>
-    </div>
-  </div>
-
-  <!-- ═══ IMAGE ═══ -->
-  <div class="tab-panel" id="tab-image">
-    <!-- Skincare -->
-    <div class="card">
-      <div class="card-title"><div class="icon" style="background:var(--pink-bg);color:var(--pink);">🧴</div> Skincare Log</div>
-      <div class="form-row" style="grid-template-columns:auto 1fr 1fr;">
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" id="skinDate">
-        </div>
-        <div class="form-group">
-          <label>AM Routine</label>
-          <input type="text" id="skinAM" placeholder="e.g. Cleanser → Toner → Serum → SPF50">
-        </div>
-        <div class="form-group">
-          <label>PM Routine</label>
-          <input type="text" id="skinPM" placeholder="e.g. Oil cleanse → Cleanser → Retinol → Moisturizer">
-        </div>
-      </div>
-      <div class="form-row" style="grid-template-columns:1fr 1fr;">
-        <div class="form-group">
-          <label>Skin Condition</label>
-          <select id="skinCondition">
-            <option value="Clear">✨ Clear</option>
-            <option value="Normal">😊 Normal</option>
-            <option value="Oily">💦 Oily</option>
-            <option value="Dry">🏜️ Dry</option>
-            <option value="Breakout">😬 Breakout</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Notes</label>
-          <input type="text" id="skinNotes" placeholder="New product reaction, restock needed...">
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="logSkincare()" style="width:100%;padding:10px;">Save Skincare Log</button>
-    </div>
-
-    <!-- Grooming -->
-    <div class="card">
-      <div class="card-title"><div class="icon" style="background:var(--amber-bg);color:var(--amber);">💈</div> Grooming</div>
-      <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr;">
-        <div class="form-group">
-          <label>Last Haircut</label>
-          <input type="date" id="groomHaircut">
-        </div>
-        <div class="form-group">
-          <label>Next Appointment</label>
-          <input type="date" id="groomNext">
-        </div>
-        <div class="form-group">
-          <label>Style</label>
-          <input type="text" id="groomStyle" placeholder="e.g. Undercut fade">
-        </div>
-        <div class="form-group">
-          <label>Cost (SGD)</label>
-          <input type="number" id="groomCost" placeholder="30">
-        </div>
-      </div>
-      <button class="btn" onclick="logGrooming()">Save Grooming</button>
-      <div id="groomingHistory" style="margin-top:12px;"></div>
-    </div>
-
-    <!-- Wardrobe -->
-    <div class="card">
-      <div class="card-title"><div class="icon" style="background:var(--purple-bg);color:var(--purple);">👔</div> Wardrobe Log</div>
-      <div class="form-row" style="grid-template-columns:auto 1fr 1fr auto;">
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" id="outfitDate">
-        </div>
-        <div class="form-group">
-          <label>Outfit</label>
-          <input type="text" id="outfitDesc" placeholder="e.g. Navy blazer + white shirt + chinos">
-        </div>
-        <div class="form-group">
-          <label>Occasion</label>
-          <select id="outfitOccasion">
-            <option value="Work">Work</option>
-            <option value="Casual">Casual</option>
-            <option value="Dinner">Dinner</option>
-            <option value="Meeting">Meeting</option>
-            <option value="Date">Date</option>
-            <option value="Event">Event</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Rating</label>
-          <select id="outfitRating">
-            <option value="5">⭐⭐⭐⭐⭐</option>
-            <option value="4">⭐⭐⭐⭐</option>
-            <option value="3" selected>⭐⭐⭐</option>
-            <option value="2">⭐⭐</option>
-            <option value="1">⭐</option>
-          </select>
-        </div>
-      </div>
-      <button class="btn" onclick="logOutfit()">Save Outfit</button>
-      <div id="outfitHistory" style="margin-top:12px;"></div>
-    </div>
-
-    <!-- Fragrance -->
-    <div class="card">
-      <div class="card-title"><div class="icon" style="background:var(--accent-bg);color:var(--accent);">🫧</div> Fragrance Rotation</div>
-      <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
-        <div class="form-group">
-          <label>Fragrance</label>
-          <input type="text" id="fragName" placeholder="e.g. Bleu de Chanel">
-        </div>
-        <div class="form-group">
-          <label>Occasion</label>
-          <select id="fragOccasion">
-            <option value="Daily">Daily</option>
-            <option value="Work">Work</option>
-            <option value="Evening">Evening</option>
-            <option value="Date">Date</option>
-            <option value="Special">Special Event</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Stock Level</label>
-          <select id="fragStock">
-            <option value="Full">Full</option>
-            <option value="Half">Half</option>
-            <option value="Low">Low - Reorder soon</option>
-            <option value="Empty">Empty</option>
-          </select>
-        </div>
-      </div>
-      <button class="btn" onclick="addFragrance()">Add / Update Fragrance</button>
-      <div id="fragranceList" style="margin-top:12px;"></div>
-    </div>
-  </div>
-
-  <!-- ═══ SUPPLEMENTS ═══ -->
-  <div class="tab-panel" id="tab-supplements">
-    <div class="card">
-      <div class="card-title"><div class="icon" style="background:var(--green-bg);color:var(--green);">💊</div> Supplements Tracker</div>
-      <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr auto;">
-        <div class="form-group">
-          <label>Supplement</label>
-          <input type="text" id="suppName" placeholder="e.g. Vitamin D3">
-        </div>
-        <div class="form-group">
-          <label>Daily Dosage</label>
-          <input type="text" id="suppDosage" placeholder="e.g. 2000 IU">
-        </div>
-        <div class="form-group">
-          <label>Stock (days left)</label>
-          <input type="number" id="suppStock" placeholder="30">
-        </div>
-        <div class="form-group">
-          <label>Expiry Date</label>
-          <input type="date" id="suppExpiry">
-        </div>
-        <div class="form-group" style="justify-content:flex-end;">
-          <label>&nbsp;</label>
-          <button class="btn btn-primary btn-sm" onclick="addSupplement()">+ Add</button>
-        </div>
-      </div>
-      <div id="supplementList" style="margin-top:12px;"></div>
-    </div>
-  </div>
-
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// ═══════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════
-let DATA = {
-  workouts: [],
-  measurements: [],
-  dailyHealth: [],
-  skincare: [],
-  grooming: [],
-  outfits: [],
-  fragrances: [],
-  supplements: []
-};
-
-// ── Google Sheet 后端配置 ──────────────────────────
-const FITNESS_BACKEND = 'https://script.google.com/macros/s/AKfycbxxp1f_y5kXl_rPUgJORcPb9y1oFX7eoxV9QN2lvEoQbWqBraH7gLXgljWSbOOoSHjU2A/exec';
-
-async function pushToSheet(action, payload) {
-  try {
-    const res = await fetch(FITNESS_BACKEND, {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain'},
-      body: JSON.stringify({action, ...payload})
-    });
-    const json = await res.json();
-    return json;
-  } catch(e) {
-    console.warn('Sheet sync failed:', e.message);
-    return {success: false, error: e.message};
-  }
-}
-
-async function pullWorkoutsFromSheet() {
-  try {
-    const res = await fetch(FITNESS_BACKEND + '?action=getWorkouts');
-    const json = await res.json();
-    if (json.success && json.workouts && json.workouts.length > 0) {
-      // Merge: sheet records take priority, keep local-only records
-      const sheetDates = new Set(json.workouts.map(w => w.date + '|' + w.part));
-      const localOnly = DATA.workouts.filter(w => !sheetDates.has(w.date + '|' + w.part));
-      DATA.workouts = [...json.workouts, ...localOnly].sort((a,b) => (b.date||'').localeCompare(a.date||''));
-      save();
-      renderWorkoutHistory();
-      renderTodayBanner();
+    function switchTab(name){
+      document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(`tab-${name}`).classList.add('active');
+      document.querySelectorAll(`.tab-btn[data-tab="${name}"]`).forEach(el => el.classList.add('active'));
+      if(name === 'dashboard') renderDashboard();
     }
-  } catch(e) {
-    console.warn('Pull failed:', e.message);
-  }
-}
 
-(function init() {
-  document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-SG', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-  const today = new Date().toISOString().slice(0,10);
-  ['gymDate','healthDate','skinDate','outfitDate'].forEach(id => document.getElementById(id).value = today);
-
-  try { DATA = JSON.parse(localStorage.getItem('daoyou_health') || 'null') || DATA; } catch(e) {}
-
-  renderAll();
-  renderTodayBanner();
-  // Auto-pull from Sheet on load
-  setTimeout(pullWorkoutsFromSheet, 1500);
-})();
-
-function save() {
-  localStorage.setItem('daoyou_health', JSON.stringify(DATA));
-  renderAll();
-}
-
-function renderAll() {
-  renderOverview();
-  renderWorkoutHistory();
-  renderHealthHistory();
-  renderGroomingHistory();
-  renderOutfitHistory();
-  renderFragranceList();
-  renderSupplementList();
-}
-
-function formatDate(d) {
-  if (!d) return '—';
-  const p = String(d).split('-');
-  if (p.length === 3) return p[2]+'/'+p[1]+'/'+p[0];
-  return d;
-}
-
-// ═══════════════════════════════════════
-// OVERVIEW
-// ═══════════════════════════════════════
-function renderOverview() {
-  const now = new Date();
-  const thisWeek = DATA.workouts.filter(w => {
-    const d = new Date(w.date);
-    const diff = (now - d) / (1000*60*60*24);
-    return diff >= 0 && diff < 7;
-  });
-  const thisMonth = DATA.workouts.filter(w => w.date && w.date.startsWith(now.toISOString().slice(0,7)));
-  const avgSleep = DATA.dailyHealth.length > 0 ? (DATA.dailyHealth.slice(-7).reduce((s,d) => s + (d.sleepHours||0), 0) / Math.min(7, DATA.dailyHealth.length)).toFixed(1) : '—';
-  const lastWeight = DATA.measurements.length > 0 ? DATA.measurements[DATA.measurements.length-1].weight : '—';
-  const skinStreak = calcStreak(DATA.skincare.map(s => s.date));
-  const gymStreak = calcStreak(DATA.workouts.map(w => w.date));
-
-  document.getElementById('overviewStats').innerHTML = `
-    <div class="stat"><div class="sv" style="color:var(--green);">${thisWeek.length}</div><div class="sl">Workouts This Week</div></div>
-    <div class="stat"><div class="sv" style="color:var(--accent);">${thisMonth.length}</div><div class="sl">Workouts This Month</div></div>
-    <div class="stat"><div class="sv" style="color:var(--purple);">${avgSleep}h</div><div class="sl">Avg Sleep (7d)</div></div>
-    <div class="stat"><div class="sv" style="color:var(--amber);">${lastWeight}${lastWeight !== '—' ? 'kg' : ''}</div><div class="sl">Last Weight</div></div>
-    <div class="stat"><div class="sv" style="color:var(--pink);">${DATA.skincare.length}</div><div class="sl">Skincare Logs</div></div>
-    <div class="stat"><div class="sv" style="color:var(--accent);">${DATA.supplements.length}</div><div class="sl">Supplements</div></div>
-  `;
-
-  // Streaks
-  document.getElementById('streakDisplay').innerHTML = `
-    <span class="streak-badge" style="background:var(--green-bg);color:var(--green);">💪 Gym: ${gymStreak} day streak</span>
-    <span class="streak-badge" style="background:var(--pink-bg);color:var(--pink);">🧴 Skincare: ${skinStreak} day streak</span>
-    ${DATA.supplements.filter(s => s.stock <= 7).map(s => `<span class="streak-badge" style="background:var(--red-bg);color:var(--red);">⚠️ ${s.name}: ${s.stock} days left</span>`).join('')}
-  `;
-
-  // Recent activity
-  const all = [
-    ...DATA.workouts.map(w => ({ date: w.date, text: `💪 ${w.part} — ${w.duration}min (${w.intensity}/5)`, type: 'workout' })),
-    ...DATA.dailyHealth.map(h => ({ date: h.date, text: `🫀 Diet: ${h.dietRating} · Sleep: ${h.sleepHours}h (${h.sleepQuality}/5)`, type: 'health' })),
-    ...DATA.skincare.map(s => ({ date: s.date, text: `🧴 Skin: ${s.condition} · AM: ${s.am||'—'} · PM: ${s.pm||'—'}`, type: 'skincare' })),
-    ...DATA.outfits.map(o => ({ date: o.date, text: `👔 ${o.desc} (${o.occasion}) ${'⭐'.repeat(o.rating)}`, type: 'outfit' }))
-  ].sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0, 10);
-
-  document.getElementById('recentActivity').innerHTML = all.length === 0
-    ? '<div style="text-align:center;color:var(--ink3);padding:20px;">No activity yet. Start logging!</div>'
-    : all.map(a => `<div class="log-entry"><span class="log-date">${formatDate(a.date)}</span><span class="log-content">${a.text}</span></div>`).join('');
-}
-
-function calcStreak(dates) {
-  if (!dates.length) return 0;
-  const sorted = [...new Set(dates)].sort().reverse();
-  let streak = 0;
-  const today = new Date().toISOString().slice(0,10);
-  let check = new Date(today);
-  for (let i = 0; i < sorted.length; i++) {
-    const expected = check.toISOString().slice(0,10);
-    if (sorted[i] === expected) { streak++; check.setDate(check.getDate()-1); }
-    else if (i === 0 && sorted[i] === new Date(check.setDate(check.getDate()-1)).toISOString().slice(0,10)) { streak++; check.setDate(check.getDate()-1); }
-    else break;
-  }
-  return streak;
-}
-
-// ═══════════════════════════════════════
-// FITNESS
-// ═══════════════════════════════════════
-// ── 三分化工具函数 ─────────────────────────────
-function getNextTrainingDay() {
-  var rotation = ['A','B','C'];
-  var parts = { A:'腿 + 肩膀', B:'胸 + 三头肌', C:'背 + 二头肌' };
-  var sorted = DATA.workouts
-    .filter(function(w){ return w.part && w.part.startsWith('Day'); })
-    .sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
-  if (sorted.length === 0) return { day:'A', content:'腿 + 肩膀' };
-  var lastDay = sorted[0].part.replace('Day ','').charAt(0);
-  var idx = rotation.indexOf(lastDay);
-  var nextIdx = (idx + 1) % 3;
-  var nextDay = rotation[nextIdx];
-  return { day: nextDay, content: parts[nextDay] };
-}
-
-function renderTodayBanner() {
-  var banner = document.getElementById('todayDayBanner');
-  if (!banner) return;
-  var next = getNextTrainingDay();
-  var colors = { A:'var(--accent)', B:'var(--green)', C:'var(--purple)' };
-  var icons  = { A:'🦵', B:'🔥', C:'💪' };
-  var c = colors[next.day] || 'var(--accent)';
-  banner.style.background = 'rgba(0,0,0,0.15)';
-  banner.style.borderLeft = '3px solid '+c;
-  banner.style.color = c;
-  banner.innerHTML = icons[next.day]+' 今日建议：<strong>Day '+next.day+' — '+next.content+'</strong>';
-  // Auto-select in dropdown
-  var sel = document.getElementById('gymPart');
-  if (sel) {
-    for (var i=0; i<sel.options.length; i++) {
-      if (sel.options[i].value.indexOf('Day '+next.day) === 0) {
-        sel.selectedIndex = i; break;
-      }
+    async function apiFetch(action, method='GET', body=null){
+      const url = method === 'GET' ? `${API_URL}?${new URLSearchParams({ action, ...(body || {}) }).toString()}` : API_URL;
+      const res = await fetch(url, {
+        method,
+        headers: method === 'GET' ? {} : { 'Content-Type': 'application/json' },
+        body: method === 'GET' ? undefined : JSON.stringify({ action, ...(body || {}) })
+      });
+      const data = await res.json();
+      if(!data.success) throw new Error(data.error || 'Request failed');
+      return data;
     }
-  }
-}
 
-function logWorkout() {
-  var w = {
-    date: document.getElementById('gymDate').value,
-    part: document.getElementById('gymPart').value,
-    duration: parseInt(document.getElementById('gymDuration').value) || 0,
-    intensity: parseInt(document.getElementById('gymIntensity').value) || 3,
-    notes: document.getElementById('gymNotes').value
-  };
-  if (!w.date) { toast('Pick a date', 'err'); return; }
-  DATA.workouts.push(w);
-  document.getElementById('gymNotes').value = '';
-  save();
-  renderTodayBanner();
-  toast('💪 打卡成功！同步中...', 'ok');
-  pushToSheet('logWorkout', w).then(r => {
-    if (r && r.success) toast('💪 打卡成功！已同步到Sheet ✅', 'ok');
-    else toast('💪 本地已保存，Sheet同步失败（不影响使用）', 'ok');
-  });
-}
+    async function loadAll(){
+      setStatus('Loading');
+      const [w,m,s,g,d] = await Promise.all([
+        apiFetch('getWorkouts'),
+        apiFetch('getMetrics'),
+        apiFetch('getSleep'),
+        apiFetch('getGoals'),
+        apiFetch('getDashboard')
+      ]);
+      state.workouts = w.workouts || [];
+      state.metrics = m.metrics || [];
+      state.sleep = s.sleep || [];
+      state.goals = g.goals || [];
+      state.dashboard = d.dashboard || null;
+      renderWorkouts();
+      renderMetrics();
+      renderSleep();
+      renderDashboard();
+      setStatus('Ready');
+    }
 
-function logMeasurement() {
-  const m = {
-    date: new Date().toISOString().slice(0,10),
-    weight: parseFloat(document.getElementById('bodyWeight').value) || 0,
-    chest: parseFloat(document.getElementById('bodyChest').value) || 0,
-    waist: parseFloat(document.getElementById('bodyWaist').value) || 0,
-    arms: parseFloat(document.getElementById('bodyArms').value) || 0,
-    photo: document.getElementById('bodyPhoto').value
-  };
-  DATA.measurements.push(m);
-  save();
-  toast('📐 Measurement saved!', 'ok');
-}
+    async function addWorkout(){
+      try{
+        setStatus('Saving');
+        await apiFetch('addWorkout','POST',{
+          date: document.getElementById('workout-date').value,
+          exerciseType: document.getElementById('workout-type').value.trim(),
+          duration: document.getElementById('workout-duration').value,
+          sets: document.getElementById('workout-sets').value,
+          reps: document.getElementById('workout-reps').value,
+          weight: document.getElementById('workout-weight').value,
+          notes: document.getElementById('workout-notes').value.trim()
+        });
+        resetWorkoutForm();
+        await loadAll();
+      }catch(err){ alert(err.message || 'Failed to save workout'); setStatus('Error'); }
+    }
 
-function renderWorkoutHistory() {
-  var el = document.getElementById('workoutHistory');
-  var sorted = DATA.workouts.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); }).slice(0, 20);
-  if (sorted.length === 0) { el.innerHTML = '<div style="text-align:center;color:var(--ink3);padding:16px;">No workouts yet — 打第一张卡吧！</div>'; return; }
+    async function addMetric(){
+      try{
+        setStatus('Saving');
+        await apiFetch('addMetric','POST',{
+          date: document.getElementById('metric-date').value,
+          weight: document.getElementById('metric-weight').value,
+          bodyFat: document.getElementById('metric-bodyfat').value,
+          chest: document.getElementById('metric-chest').value,
+          waist: document.getElementById('metric-waist').value,
+          arms: document.getElementById('metric-arms').value,
+          notes: document.getElementById('metric-notes').value.trim()
+        });
+        resetMetricForm();
+        await loadAll();
+      }catch(err){ alert(err.message || 'Failed to save body data'); setStatus('Error'); }
+    }
 
-  // Day color map
-  function getDayColor(part) {
-    if (!part) return { bg:'rgba(255,255,255,0.05)', border:'rgba(255,255,255,0.1)', text:'var(--ink2)' };
-    if (part.indexOf('Day A') === 0) return { bg:'rgba(251,191,36,0.06)', border:'rgba(251,191,36,0.25)', text:'var(--amber)' };
-    if (part.indexOf('Day B') === 0) return { bg:'rgba(74,222,128,0.06)', border:'rgba(74,222,128,0.25)', text:'var(--green)' };
-    if (part.indexOf('Day C') === 0) return { bg:'rgba(167,139,250,0.06)', border:'rgba(167,139,250,0.25)', text:'var(--purple)' };
-    return { bg:'rgba(255,255,255,0.04)', border:'rgba(255,255,255,0.1)', text:'var(--ink3)' };
-  }
+    async function addSleep(){
+      try{
+        setStatus('Saving');
+        await apiFetch('addSleep','POST',{
+          date: document.getElementById('sleep-date').value,
+          sleepTime: document.getElementById('sleep-time').value,
+          wakeTime: document.getElementById('wake-time').value,
+          duration: document.getElementById('sleep-duration').value,
+          quality: document.getElementById('sleep-quality').value
+        });
+        resetSleepForm();
+        await loadAll();
+      }catch(err){ alert(err.message || 'Failed to save sleep log'); setStatus('Error'); }
+    }
 
-  el.innerHTML = sorted.map(function(w, i) {
-    var intColor = w.intensity >= 4 ? 'var(--red)' : w.intensity >= 3 ? 'var(--amber)' : 'var(--green)';
-    var dc = getDayColor(w.part);
-    return '<div class="log-entry" style="background:'+dc.bg+';border-color:'+dc.border+';margin-bottom:6px;">'
-      + '<span class="log-date">'+formatDate(w.date)+'</span>'
-      + '<span class="log-content" style="color:'+dc.text+';font-weight:600;">'+w.part+'</span>'
-      + '<span class="log-content" style="color:var(--ink3);">'+w.duration+'min'+(w.notes ? ' · '+w.notes : '')+'</span>'
-      + '<span class="log-tag" style="background:'+intColor+'20;color:'+intColor+';">'+w.intensity+'/5</span>'
-      + '<button class="btn btn-sm btn-danger" onclick="DATA.workouts.splice(DATA.workouts.indexOf(DATA.workouts.find(function(x,j){return j===(DATA.workouts.length-1-'+i+');})),1);save();renderWorkoutHistory();toast(\'Deleted\',\'ok\');" style="padding:3px 8px;">✕</button>'
-      + '</div>';
-  }).join('');
-}
+    async function saveGoal(){
+      try{
+        setStatus('Saving');
+        await apiFetch('updateGoal','POST',{
+          goal: document.getElementById('goal-name').value.trim(),
+          target: document.getElementById('goal-target').value.trim(),
+          current: document.getElementById('goal-current').value.trim(),
+          deadline: document.getElementById('goal-deadline').value,
+          status: document.getElementById('goal-status').value
+        });
+        document.getElementById('goal-name').value='';
+        document.getElementById('goal-target').value='';
+        document.getElementById('goal-current').value='';
+        document.getElementById('goal-deadline').value='';
+        document.getElementById('goal-status').value='Active';
+        await loadAll();
+      }catch(err){ alert(err.message || 'Failed to save goal'); setStatus('Error'); }
+    }
 
-// ═══════════════════════════════════════
-// DAILY HEALTH
-// ═══════════════════════════════════════
-function logDailyHealth() {
-  const sleepT = document.getElementById('sleepTime').value;
-  const wakeT = document.getElementById('wakeTime').value;
-  let sleepHours = 0;
-  if (sleepT && wakeT) {
-    const [sh,sm] = sleepT.split(':').map(Number);
-    const [wh,wm] = wakeT.split(':').map(Number);
-    sleepHours = ((wh*60+wm) - (sh*60+sm) + 1440) % 1440 / 60;
-    sleepHours = Math.round(sleepHours * 10) / 10;
-  }
-  const h = {
-    date: document.getElementById('healthDate').value,
-    breakfast: document.getElementById('mealBreakfast').value,
-    lunch: document.getElementById('mealLunch').value,
-    dinner: document.getElementById('mealDinner').value,
-    dietRating: document.getElementById('dietRating').value,
-    sleepTime: sleepT, wakeTime: wakeT, sleepHours,
-    sleepQuality: parseInt(document.getElementById('sleepQuality').value),
-    water: parseInt(document.getElementById('waterIntake').value) || 0
-  };
-  if (!h.date) { toast('Pick a date', 'err'); return; }
-  DATA.dailyHealth.push(h);
-  ['mealBreakfast','mealLunch','mealDinner'].forEach(id => document.getElementById(id).value = '');
-  save();
-  toast('🫀 Daily health logged!', 'ok');
-}
+    async function deleteWorkout(id){
+      if(!confirm('Delete this workout record?')) return;
+      try{ await apiFetch('deleteWorkout','POST',{ id }); await loadAll(); }catch(err){ alert(err.message || 'Delete failed'); }
+    }
+    async function deleteMetric(id){
+      if(!confirm('Delete this body metric record?')) return;
+      try{ await apiFetch('deleteMetric','POST',{ id }); await loadAll(); }catch(err){ alert(err.message || 'Delete failed'); }
+    }
 
-function renderHealthHistory() {
-  const el = document.getElementById('healthHistory');
-  const sorted = DATA.dailyHealth.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0, 10);
-  if (sorted.length === 0) { el.innerHTML = '<div style="text-align:center;color:var(--ink3);padding:16px;">No health logs yet</div>'; return; }
-  el.innerHTML = sorted.map(h => {
-    const dietColor = h.dietRating === 'Good' ? 'var(--green)' : h.dietRating === 'Ok' ? 'var(--amber)' : 'var(--red)';
-    return `<div class="log-entry">
-      <span class="log-date">${formatDate(h.date)}</span>
-      <span class="log-content">Diet: <span style="color:${dietColor};font-weight:600;">${h.dietRating}</span> · Sleep: ${h.sleepHours}h (${h.sleepQuality}/5) · 💧${h.water} glasses</span>
-    </div>`;
-  }).join('');
-}
+    function renderWorkouts(){
+      const box = document.getElementById('workout-list');
+      const rows = [...state.workouts].sort((a,b)=>String(b.Date).localeCompare(String(a.Date))).slice(0,12);
+      if(!rows.length){ box.innerHTML = '<div class="empty">还没有训练记录。</div>'; return; }
+      box.innerHTML = rows.map(r=>`
+        <div class="item">
+          <div class="item-top">
+            <div>
+              <div class="item-title">${esc(r.ExerciseType || 'Workout')}</div>
+              <div class="item-sub">${esc(r.Date || '-')} · ${esc(r.Notes || '')}</div>
+            </div>
+            <button class="btn btn-danger" onclick="deleteWorkout('${esc(r.ID)}')">Delete</button>
+          </div>
+          <div class="badges">
+            <span class="badge">${esc(r.Duration || 0)} min</span>
+            <span class="badge">${esc(r.Sets || 0)} sets</span>
+            <span class="badge">${esc(r.Reps || 0)} reps</span>
+            <span class="badge">${esc(r.Weight || 0)} kg</span>
+          </div>
+        </div>`).join('');
+    }
 
-// ═══════════════════════════════════════
-// IMAGE — Skincare
-// ═══════════════════════════════════════
-function logSkincare() {
-  const s = {
-    date: document.getElementById('skinDate').value,
-    am: document.getElementById('skinAM').value,
-    pm: document.getElementById('skinPM').value,
-    condition: document.getElementById('skinCondition').value,
-    notes: document.getElementById('skinNotes').value
-  };
-  if (!s.date) { toast('Pick a date', 'err'); return; }
-  DATA.skincare.push(s);
-  ['skinAM','skinPM','skinNotes'].forEach(id => document.getElementById(id).value = '');
-  save();
-  toast('🧴 Skincare logged!', 'ok');
-}
+    function renderMetrics(){
+      const box = document.getElementById('metric-list');
+      const rows = [...state.metrics].sort((a,b)=>String(b.Date).localeCompare(String(a.Date))).slice(0,12);
+      if(!rows.length){ box.innerHTML = '<div class="empty">还没有身体数据。</div>'; return; }
+      box.innerHTML = rows.map(r=>`
+        <div class="item">
+          <div class="item-top">
+            <div>
+              <div class="item-title">${esc(r.Date || '-')}</div>
+              <div class="item-sub">${esc(r.Notes || '')}</div>
+            </div>
+            <button class="btn btn-danger" onclick="deleteMetric('${esc(r.ID)}')">Delete</button>
+          </div>
+          <div class="badges">
+            <span class="badge">Weight ${esc(r.Weight || '-')} kg</span>
+            <span class="badge">Body Fat ${esc(r.BodyFat || '-')}%</span>
+            <span class="badge">Chest ${esc(r.Chest || '-')} cm</span>
+            <span class="badge">Waist ${esc(r.Waist || '-')} cm</span>
+            <span class="badge">Arms ${esc(r.Arms || '-')} cm</span>
+          </div>
+        </div>`).join('');
+    }
 
-// ═══════════════════════════════════════
-// IMAGE — Grooming
-// ═══════════════════════════════════════
-function logGrooming() {
-  const g = {
-    haircut: document.getElementById('groomHaircut').value,
-    next: document.getElementById('groomNext').value,
-    style: document.getElementById('groomStyle').value,
-    cost: parseFloat(document.getElementById('groomCost').value) || 0,
-    date: new Date().toISOString().slice(0,10)
-  };
-  DATA.grooming.push(g);
-  save();
-  toast('💈 Grooming saved!', 'ok');
-}
+    function renderSleep(){
+      const box = document.getElementById('sleep-list');
+      const rows = [...state.sleep].sort((a,b)=>String(b.Date).localeCompare(String(a.Date))).slice(0,12);
+      if(!rows.length){ box.innerHTML = '<div class="empty">还没有睡眠记录。</div>'; return; }
+      box.innerHTML = rows.map(r=>`
+        <div class="item">
+          <div class="item-top">
+            <div>
+              <div class="item-title">${esc(r.Date || '-')}</div>
+              <div class="item-sub">${esc(r.SleepTime || '-')} → ${esc(r.WakeTime || '-')}</div>
+            </div>
+            <div class="badge">Quality ${esc(r.Quality || '-')}</div>
+          </div>
+          <div class="badges">
+            <span class="badge">${esc(r.Duration || '-')} hrs</span>
+          </div>
+        </div>`).join('');
+    }
 
-function renderGroomingHistory() {
-  const el = document.getElementById('groomingHistory');
-  const sorted = DATA.grooming.slice().sort((a,b) => (b.haircut||'').localeCompare(a.haircut||''));
-  if (sorted.length === 0) { el.innerHTML = ''; return; }
-  el.innerHTML = sorted.slice(0,5).map(g =>
-    `<div class="log-entry"><span class="log-date">${formatDate(g.haircut)}</span><span class="log-content">${g.style||'Haircut'} · $${g.cost} · Next: ${formatDate(g.next)}</span></div>`
-  ).join('');
-}
+    function renderDashboard(){
+      const d = state.dashboard || { totals:{}, workoutByMonth:[], weightTrend:[], goals:[] };
+      document.getElementById('dashboard-stats').innerHTML = `
+        <div class="stat"><div class="k">Workouts</div><div class="v">${d.totals?.workouts || 0}</div></div>
+        <div class="stat"><div class="k">Body Logs</div><div class="v">${d.totals?.metrics || 0}</div></div>
+        <div class="stat"><div class="k">Sleep Logs</div><div class="v">${d.totals?.sleep || 0}</div></div>
+        <div class="stat"><div class="k">Avg Sleep</div><div class="v">${d.totals?.avgSleepHours || 0}h</div></div>
+      `;
 
-// ═══════════════════════════════════════
-// IMAGE — Wardrobe
-// ═══════════════════════════════════════
-function logOutfit() {
-  const o = {
-    date: document.getElementById('outfitDate').value,
-    desc: document.getElementById('outfitDesc').value,
-    occasion: document.getElementById('outfitOccasion').value,
-    rating: parseInt(document.getElementById('outfitRating').value)
-  };
-  if (!o.desc) { toast('Describe your outfit', 'err'); return; }
-  DATA.outfits.push(o);
-  document.getElementById('outfitDesc').value = '';
-  save();
-  toast('👔 Outfit logged!', 'ok');
-}
+      const weights = d.weightTrend || [];
+      document.getElementById('weight-trend').innerHTML = weights.length
+        ? weights.slice(-10).map(r => `<div class="line-row"><span>${esc(r.date)}</span><strong>${esc(r.weight)} kg</strong></div>`).join('')
+        : '<div class="empty">暂无体重趋势数据。</div>';
 
-function renderOutfitHistory() {
-  const el = document.getElementById('outfitHistory');
-  const sorted = DATA.outfits.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,8);
-  if (sorted.length === 0) { el.innerHTML = ''; return; }
-  el.innerHTML = sorted.map(o =>
-    `<div class="log-entry"><span class="log-date">${formatDate(o.date)}</span><span class="log-content">${o.desc}</span><span class="log-tag" style="background:var(--purple-bg);color:var(--purple);">${o.occasion}</span><span style="font-size:0.72rem;">${'⭐'.repeat(o.rating)}</span></div>`
-  ).join('');
-}
+      const chart = document.getElementById('workout-chart');
+      const bars = d.workoutByMonth || [];
+      const max = Math.max(...bars.map(b => Number(b.count || 0)), 1);
+      chart.innerHTML = bars.length
+        ? bars.map(b => `<div class="bar-group"><div class="bar" style="height:${Math.max(12, Math.round((Number(b.count || 0)/max)*170))}px"></div><div class="bar-label">${esc(String(b.month).slice(5) || b.month)}</div></div>`).join('')
+        : '<div class="empty">暂无训练频率数据。</div>';
 
-// ═══════════════════════════════════════
-// IMAGE — Fragrance
-// ═══════════════════════════════════════
-function addFragrance() {
-  const name = document.getElementById('fragName').value.trim();
-  if (!name) return;
-  const existing = DATA.fragrances.findIndex(f => f.name === name);
-  const f = {
-    name,
-    occasion: document.getElementById('fragOccasion').value,
-    stock: document.getElementById('fragStock').value
-  };
-  if (existing >= 0) DATA.fragrances[existing] = f;
-  else DATA.fragrances.push(f);
-  document.getElementById('fragName').value = '';
-  save();
-  toast('🫧 Fragrance saved!', 'ok');
-}
+      const goalBox = document.getElementById('goal-list');
+      goalBox.innerHTML = (d.goals || []).length
+        ? d.goals.map(g => {
+            const current = parseFloat(String(g.Current).replace(/[^\d.]/g,'')) || 0;
+            const target = parseFloat(String(g.Target).replace(/[^\d.]/g,'')) || 0;
+            const pct = target > 0 ? Math.max(0, Math.min(100, Math.round(current / target * 100))) : 0;
+            return `<div class="goal"><div class="goal-top"><div class="goal-name">${esc(g.Goal || '-')}</div><div class="badge">${esc(g.Status || 'Active')}</div></div><div class="sub">Target: ${esc(g.Target || '-')} · Current: ${esc(g.Current || '-')} · Deadline: ${esc(g.Deadline || '-')}</div><div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div></div>`;
+          }).join('')
+        : '<div class="empty">暂无目标。</div>';
 
-function renderFragranceList() {
-  const el = document.getElementById('fragranceList');
-  if (DATA.fragrances.length === 0) { el.innerHTML = ''; return; }
-  const stockColor = { Full: 'var(--green)', Half: 'var(--amber)', Low: 'var(--red)', Empty: 'var(--ink3)' };
-  el.innerHTML = DATA.fragrances.map((f,i) =>
-    `<div class="log-entry">
-      <span style="font-size:0.85rem;font-weight:600;flex:1;">${f.name}</span>
-      <span class="log-tag" style="background:var(--purple-bg);color:var(--purple);">${f.occasion}</span>
-      <span class="log-tag" style="background:${stockColor[f.stock]}20;color:${stockColor[f.stock]};">${f.stock}</span>
-      <button class="btn btn-sm btn-danger" onclick="DATA.fragrances.splice(${i},1);save();" style="padding:3px 8px;">✕</button>
-    </div>`
-  ).join('');
-}
+      const snapshot = document.getElementById('snapshot-list');
+      const lines = [];
+      if(state.workouts[0]) lines.push({k:'Latest Workout',v:`${state.workouts[0].Date} · ${state.workouts[0].ExerciseType}`});
+      if(state.metrics[0]) lines.push({k:'Latest Weight',v:`${state.metrics[0].Date} · ${state.metrics[0].Weight || '-'} kg`});
+      if(state.sleep[0]) lines.push({k:'Latest Sleep',v:`${state.sleep[0].Date} · ${state.sleep[0].Duration || '-'} hrs`});
+      snapshot.innerHTML = lines.length ? lines.map(x=>`<div class="line-row"><span>${esc(x.k)}</span><strong>${esc(x.v)}</strong></div>`).join('') : '<div class="empty">暂无快照数据。</div>';
+    }
 
-// ═══════════════════════════════════════
-// SUPPLEMENTS
-// ═══════════════════════════════════════
-function addSupplement() {
-  const name = document.getElementById('suppName').value.trim();
-  if (!name) return;
-  const existing = DATA.supplements.findIndex(s => s.name === name);
-  const s = {
-    name,
-    dosage: document.getElementById('suppDosage').value,
-    stock: parseInt(document.getElementById('suppStock').value) || 0,
-    expiry: document.getElementById('suppExpiry').value
-  };
-  if (existing >= 0) DATA.supplements[existing] = s;
-  else DATA.supplements.push(s);
-  document.getElementById('suppName').value = '';
-  document.getElementById('suppDosage').value = '';
-  document.getElementById('suppStock').value = '';
-  save();
-  toast('💊 Supplement saved!', 'ok');
-}
+    function resetWorkoutForm(){ document.getElementById('workout-date').value=today(); document.getElementById('workout-type').value=''; document.getElementById('workout-duration').value='60'; document.getElementById('workout-sets').value=''; document.getElementById('workout-reps').value=''; document.getElementById('workout-weight').value=''; document.getElementById('workout-notes').value=''; }
+    function resetMetricForm(){ document.getElementById('metric-date').value=today(); document.getElementById('metric-weight').value=''; document.getElementById('metric-bodyfat').value=''; document.getElementById('metric-chest').value=''; document.getElementById('metric-waist').value=''; document.getElementById('metric-arms').value=''; document.getElementById('metric-notes').value=''; }
+    function resetSleepForm(){ document.getElementById('sleep-date').value=today(); document.getElementById('sleep-duration').value=''; document.getElementById('sleep-time').value='23:30'; document.getElementById('wake-time').value='07:00'; document.getElementById('sleep-quality').value='4'; }
 
-function renderSupplementList() {
-  const el = document.getElementById('supplementList');
-  if (DATA.supplements.length === 0) { el.innerHTML = '<div style="text-align:center;color:var(--ink3);padding:16px;">No supplements tracked</div>'; return; }
-  el.innerHTML = DATA.supplements.map((s,i) => {
-    const stockColor = s.stock <= 7 ? 'var(--red)' : s.stock <= 14 ? 'var(--amber)' : 'var(--green)';
-    return `<div class="log-entry">
-      <span style="font-size:0.85rem;font-weight:600;min-width:120px;">${s.name}</span>
-      <span style="font-size:0.78rem;color:var(--ink2);">${s.dosage}</span>
-      <span class="log-tag" style="background:${stockColor}20;color:${stockColor};">${s.stock} days left</span>
-      ${s.expiry ? `<span style="font-size:0.7rem;color:var(--ink3);">Exp: ${formatDate(s.expiry)}</span>` : ''}
-      <button class="btn btn-sm btn-danger" onclick="DATA.supplements.splice(${i},1);save();" style="padding:3px 8px;">✕</button>
-    </div>`;
-  }).join('');
-}
-
-// ═══════════════════════════════════════
-// TABS & UTILS
-// ═══════════════════════════════════════
-function switchTab(name) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  const btn = document.querySelector(`.tab-btn[onclick="switchTab('${name}')"]`);
-  if (btn) btn.classList.add('active');
-}
-
-function toast(msg, type) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'toast show ' + type;
-  setTimeout(() => el.classList.remove('show'), 3500);
-}
-</script>
+    resetWorkoutForm();
+    resetMetricForm();
+    resetSleepForm();
+    loadAll().catch(err => { console.error(err); setStatus('Error'); alert(err.message || 'Failed to load health system'); });
+  </script>
 </body>
 </html>
