@@ -135,6 +135,11 @@
           <div class="list" id="workout-list"></div>
         </div>
       </div>
+      <div class="card" style="margin-top:16px">
+        <h2>Workout History</h2>
+        <p class="sub">完整训练历史，按日期倒序显示。</p>
+        <div class="list" id="workout-history-list"></div>
+      </div>
     </section>
 
     <section class="panel" id="tab-body">
@@ -449,8 +454,10 @@
 
     function renderWorkouts(){
       const box = document.getElementById('workout-list');
-      const rows = [...state.workouts].sort((a,b)=>String(b.Date).localeCompare(String(a.Date))).slice(0,12);
-      if(!rows.length){ box.innerHTML = '<div class="empty">还没有训练记录。</div>'; return; }
+      const historyBox = document.getElementById('workout-history-list');
+      const allRows = [...state.workouts].sort((a,b)=>String(b.Date).localeCompare(String(a.Date)));
+      const rows = allRows.slice(0,12);
+      if(!rows.length){ box.innerHTML = '<div class="empty">还没有训练记录。</div>'; if(historyBox) historyBox.innerHTML = '<div class="empty">还没有训练历史。</div>'; return; }
       box.innerHTML = rows.map(r=>`
         <div class="item">
           <div class="item-top">
@@ -467,6 +474,23 @@
             <span class="badge">${esc(r.Weight || 0)} kg</span>
           </div>
         </div>`).join('');
+      if(historyBox){
+        historyBox.innerHTML = allRows.map(r=>`
+          <div class="item">
+            <div class="item-top">
+              <div>
+                <div class="item-title">${esc(r.Date || '-')} · ${esc(r.ExerciseType || 'Workout')}</div>
+                <div class="item-sub">${esc(r.Notes || '')}</div>
+              </div>
+              <div class="badge">${esc(r.Duration || 0)} min</div>
+            </div>
+            <div class="badges">
+              <span class="badge">${esc(r.Sets || 0)} sets</span>
+              <span class="badge">${esc(r.Reps || 0)} reps</span>
+              <span class="badge">${esc(r.Weight || 0)} kg</span>
+            </div>
+          </div>`).join('');
+      }
     }
 
     function renderMetrics(){
@@ -490,6 +514,23 @@
             <span class="badge">Arms ${esc(r.Arms || '-')} cm</span>
           </div>
         </div>`).join('');
+      if(historyBox){
+        historyBox.innerHTML = allRows.map(r=>`
+          <div class="item">
+            <div class="item-top">
+              <div>
+                <div class="item-title">${esc(r.Date || '-')} · ${esc(r.ExerciseType || 'Workout')}</div>
+                <div class="item-sub">${esc(r.Notes || '')}</div>
+              </div>
+              <div class="badge">${esc(r.Duration || 0)} min</div>
+            </div>
+            <div class="badges">
+              <span class="badge">${esc(r.Sets || 0)} sets</span>
+              <span class="badge">${esc(r.Reps || 0)} reps</span>
+              <span class="badge">${esc(r.Weight || 0)} kg</span>
+            </div>
+          </div>`).join('');
+      }
     }
 
     function renderSleep(){
@@ -509,6 +550,23 @@
             <span class="badge">${esc(r.Duration || '-')} hrs</span>
           </div>
         </div>`).join('');
+      if(historyBox){
+        historyBox.innerHTML = allRows.map(r=>`
+          <div class="item">
+            <div class="item-top">
+              <div>
+                <div class="item-title">${esc(r.Date || '-')} · ${esc(r.ExerciseType || 'Workout')}</div>
+                <div class="item-sub">${esc(r.Notes || '')}</div>
+              </div>
+              <div class="badge">${esc(r.Duration || 0)} min</div>
+            </div>
+            <div class="badges">
+              <span class="badge">${esc(r.Sets || 0)} sets</span>
+              <span class="badge">${esc(r.Reps || 0)} reps</span>
+              <span class="badge">${esc(r.Weight || 0)} kg</span>
+            </div>
+          </div>`).join('');
+      }
     }
 
     function renderDashboard(){
